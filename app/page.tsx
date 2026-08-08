@@ -4,6 +4,12 @@ import Logo from "@/components/Logo";
 export default function LandingPage() {
   return (
     <main className="flex-1 bg-podium-chalk text-podium-asphalt">
+      {/* 🧪 BANNER DE PRUEBA — confirma que el push automático a Vercel
+          funciona. Se quita en el siguiente cambio. */}
+      <div className="bg-podium-track text-podium-asphalt text-center py-3 font-mono text-sm uppercase tracking-widest">
+        🚀 Despliegue automático funcionando — este banner es de prueba
+      </div>
+
       {/* HERO */}
       <section className="bg-podium-asphalt text-podium-chalk px-6 pt-14 pb-24">
         <div className="max-w-3xl mx-auto text-center">

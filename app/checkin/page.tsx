@@ -20,7 +20,6 @@ import {
   MIN_MINUTES,
 } from "@/lib/memberStore";
 import RegisterForm from "@/components/RegisterForm";
-import RequireRole from "@/components/RequireRole";
 import Logo from "@/components/Logo";
 
 // ============================================================
@@ -254,10 +253,8 @@ function CheckinContent() {
 
 export default function CheckinPage() {
   return (
-    <RequireRole role="socio">
-      <Suspense fallback={null}>
-        <CheckinContent />
-      </Suspense>
-    </RequireRole>
+    <Suspense fallback={null}>
+      <CheckinContent />
+    </Suspense>
   );
 }

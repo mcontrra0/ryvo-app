@@ -14,7 +14,6 @@ import {
   claimForgottenCheckout,
 } from "@/lib/memberStore";
 import Logo from "@/components/Logo";
-import RequireRole from "@/components/RequireRole";
 
 function MiRankingInner() {
   const [me, setMe] = useState<Member | null | undefined>(undefined);
@@ -283,9 +282,5 @@ function RankRow({ position, member, isMe }: { position: number; member: Member;
 }
 
 export default function MiRankingPage() {
-  return (
-    <RequireRole role="socio">
-      <MiRankingInner />
-    </RequireRole>
-  );
+  return <MiRankingInner />;
 }
