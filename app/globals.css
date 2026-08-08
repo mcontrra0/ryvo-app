@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f5f3ee;
+  --foreground: #1b1b1f;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Paleta Ryvo: energía, luz, pista clara */
+  --color-podium-asphalt: #1b1b1f;   /* texto oscuro / elementos de contraste */
+  --color-podium-chalk: #fbfaf6;     /* blanco cálido, fondo base */
+  --color-podium-track: #8fd400;     /* verde lima — color principal de marca */
+  --color-podium-track-dark: #6ea300;
+  --color-podium-gold: #c9a227;      /* 1er puesto */
+  --color-podium-silver: #9ca3af;    /* 2º puesto */
+  --color-podium-bronze: #b08d57;    /* 3er puesto */
+  --color-podium-mint: #2fb88a;      /* estado positivo / activo (distinto del verde de marca) */
+  --color-podium-danger: #e5484d;    /* errores, avisos, riesgo — el rojo ya no es el color de marca */
+
+  /* Fallback de sistema (ver nota en app/layout.tsx sobre next/font/google) */
+  --font-display: "Arial Narrow", "Oswald", Impact, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", "Cascadia Code", "IBM Plex Mono", Menlo, Consolas, monospace;
+  --font-logo: "Bebas Neue", "Arial Narrow", Impact, sans-serif; /* solo para el wordmark "Ryvo" */
+}
+
+body {
+  background: var(--color-podium-chalk);
+  color: var(--color-podium-asphalt);
+  font-family: var(--font-sans);
+}
+
+/* Líneas de pista — el motivo estructural recurrente de la marca */
+.lane-divider {
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--color-podium-asphalt) 0,
+    var(--color-podium-asphalt) 8px,
+    transparent 8px,
+    transparent 16px
+  );
+  height: 2px;
+  opacity: 0.15;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}

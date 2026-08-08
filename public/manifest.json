@@ -1,0 +1,10 @@
+{
+  "name": "Ryvo",
+  "short_name": "Ryvo",
+  "description": "Fichaje y radar de riesgo de baja para gimnasios independientes.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbfaf6",
+  "theme_color": "#8fd400",
+  "icons": []
+}
