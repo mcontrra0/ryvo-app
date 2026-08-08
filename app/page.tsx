@@ -4,10 +4,9 @@ import Logo from "@/components/Logo";
 export default function LandingPage() {
   return (
     <main className="flex-1 bg-podium-chalk text-podium-asphalt">
-      {/* 🧪 BANNER DE PRUEBA — confirma que el push automático a Vercel
-          funciona. Se quita en el siguiente cambio. */}
+      {/* Banner de fase piloto — refuerza el mensaje de "precio fundador" de más abajo */}
       <div className="bg-podium-track text-podium-asphalt text-center py-3 font-mono text-sm uppercase tracking-widest">
-        🚀 Despliegue automático funcionando — este banner es de prueba
+        🚀 En fase piloto en Sevilla — precio fundador para los primeros gimnasios
       </div>
 
       {/* HERO */}
