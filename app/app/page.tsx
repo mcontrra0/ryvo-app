@@ -94,21 +94,6 @@ export default function AppEntryPage() {
             </Link>
           )}
 
-          {session.role === "monitor" && (
-            <Link
-              href="/monitor"
-              className="group flex items-center justify-between rounded-md border border-podium-asphalt/15 px-5 py-4 hover:border-podium-track-dark hover:bg-podium-track/10 transition-colors"
-            >
-              <span>
-                <span className="block font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50 mb-1">
-                  Monitor · valida asistencia a su clase
-                </span>
-                <span className="font-display text-2xl uppercase">Modo monitor</span>
-              </span>
-              <span className="text-podium-track-dark text-2xl group-hover:translate-x-1 transition-transform">→</span>
-            </Link>
-          )}
-
           {session.role === "tv" && (
             <Link
               href="/tv"

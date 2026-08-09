@@ -14,7 +14,7 @@ import { setDeviceMemberId } from "./memberStore";
 // credenciales en texto plano en el código, como aquí.
 // ============================================================
 
-export type Role = "socio" | "ceo" | "monitor" | "tv";
+export type Role = "socio" | "ceo" | "tv";
 
 export interface DemoUser {
   username: string;
@@ -39,12 +39,6 @@ export const DEMO_USERS: DemoUser[] = [
     displayName: "Dueño del gimnasio",
   },
   {
-    username: "monitor",
-    password: "monitor1234",
-    role: "monitor",
-    displayName: "Monitor / entrenador",
-  },
-  {
     username: "tv",
     password: "tv1234",
     role: "tv",
@@ -63,7 +57,6 @@ export interface Session {
 export const ROLE_HOME: Record<Role, string> = {
   socio: "/app",
   ceo: "/dashboard",
-  monitor: "/monitor",
   tv: "/tv",
 };
 

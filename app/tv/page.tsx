@@ -193,7 +193,7 @@ export default function TvPage() {
             >
               🔥 {ev.memberName}
               <span className="text-podium-asphalt/70 font-mono text-lg normal-case">
-                {ev.kind === "clase" ? "clase completada" : "sesión completada"}
+                sesión completada
               </span>
               <span className="text-podium-asphalt font-semibold">+{ev.xp} XP</span>
             </span>

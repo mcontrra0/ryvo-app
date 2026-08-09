@@ -45,7 +45,6 @@ export interface Member {
   sesiones14a28DiasAtras: number;
   xpTotal: number;
   racha: number; // semanas consecutivas CONFIRMADAS cumpliendo MIN_SESSIONS_PER_WEEK
-  lastClaseBonus: string | null; // último bonus de clase otorgado por el monitor
   anomaliasGps: number; // fichajes marcados como "lejos del gym" — solo aviso, no bloqueo
   sessionDaysThisMonth: string[]; // fechas únicas (YYYY-MM-DD) del mes en curso, para el cashback
   cashbackMonthKey: string | null; // "YYYY-MM" del mes que se está contando

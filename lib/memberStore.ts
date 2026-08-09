@@ -16,11 +16,9 @@ const OVERRIDES_KEY = "podium_member_overrides";
 const DEVICE_MEMBER_KEY = "podium_device_member_id";
 const OPEN_SESSION_KEY = "podium_open_checkin";
 const PENDING_CLAIM_KEY = "podium_pending_claim";
-const TODAY_CHECKINS_KEY = "podium_today_checkins";
 const MUSCLE_TALLY_KEY = "podium_muscle_tally";
 
 export const MIN_MINUTES = 45;
-const CLASE_BONUS_XP = 40;
 const ABANDON_HOURS = 3; // sesión abierta más de esto = se da por olvidada
 const COMODIN_COOLDOWN_DAYS = 7;
 const CLAIM_WINDOW_HOURS = 3; // margen para reclamar tras detectarse como olvidada
@@ -49,7 +47,6 @@ function normalizeMember(partial: Partial<Member> & { id: string }): Member {
     sesiones14a28DiasAtras: partial.sesiones14a28DiasAtras ?? 0,
     xpTotal: partial.xpTotal ?? 0,
     racha: partial.racha ?? 0,
-    lastClaseBonus: partial.lastClaseBonus ?? null,
     anomaliasGps: partial.anomaliasGps ?? 0,
     sessionDaysThisMonth: partial.sessionDaysThisMonth ?? [],
     cashbackMonthKey: partial.cashbackMonthKey ?? null,
@@ -135,7 +132,6 @@ export function registerMember(data: { fullName: string; phone?: string }): Memb
     sesiones14a28DiasAtras: 0,
     xpTotal: 0,
     racha: 0,
-    lastClaseBonus: null,
     anomaliasGps: 0,
     sessionDaysThisMonth: [],
     cashbackMonthKey: null,
@@ -301,59 +297,6 @@ export function recordGpsAnomaly(memberId: string) {
   const current = getMemberById(memberId);
   if (!current) return;
   setOverride(memberId, { anomaliasGps: current.anomaliasGps + 1 });
-}
-
-// ---------- Roster del día para el monitor ----------
-
-interface TodayCheckinEntry {
-  memberId: string;
-  memberName: string;
-  time: string;
-  dateKey: string;
-}
-
-export function recordTodayCheckin(member: { id: string; fullName: string }) {
-  const today = todayKey();
-  const list = readJSON<TodayCheckinEntry[]>(TODAY_CHECKINS_KEY, []).filter(
-    (e) => e.dateKey === today // limpia entradas de días anteriores
-  );
-  if (list.some((e) => e.memberId === member.id)) return; // ya está en la lista de hoy
-  list.push({
-    memberId: member.id,
-    memberName: member.fullName,
-    time: new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
-    dateKey: today,
-  });
-  writeJSON(TODAY_CHECKINS_KEY, list);
-}
-
-export function getTodayCheckins(): TodayCheckinEntry[] {
-  const today = todayKey();
-  return readJSON<TodayCheckinEntry[]>(TODAY_CHECKINS_KEY, []).filter(
-    (e) => e.dateKey === today
-  );
-}
-
-// ---------- Bonus de clase dirigida — ahora lo otorga el monitor, no un
-// segundo NFC de honor, para que no se pueda fichar sin haber asistido ----------
-
-export function awardClaseBonus(memberId: string): {
-  awarded: boolean;
-  xp: number;
-  alreadyClaimedToday: boolean;
-} {
-  const current = getMemberById(memberId);
-  if (!current) return { awarded: false, xp: 0, alreadyClaimedToday: false };
-
-  const today = new Date().toDateString();
-  const lastDate = current.lastClaseBonus ? new Date(current.lastClaseBonus).toDateString() : null;
-  if (lastDate === today) return { awarded: false, xp: 0, alreadyClaimedToday: true };
-
-  setOverride(memberId, {
-    xpTotal: current.xpTotal + CLASE_BONUS_XP,
-    lastClaseBonus: new Date().toISOString(),
-  });
-  return { awarded: true, xp: CLASE_BONUS_XP, alreadyClaimedToday: false };
 }
 
 // ---------- Grupo muscular (analítica descriptiva, opcional para el socio) ----------

@@ -71,7 +71,7 @@ function LoginContent() {
         </div>
 
         <p className="font-mono text-[10px] text-podium-asphalt/30 mt-6 text-center leading-relaxed">
-          Demo — pide las 4 credenciales de prueba (socio / CEO / monitor / TV)
+          Demo — pide las 3 credenciales de prueba (socio / CEO / TV)
         </p>
       </div>
     </main>

@@ -5,13 +5,12 @@
 export interface ActivityEvent {
   memberName: string;
   xp: number;
-  kind: "sesion" | "clase";
 }
 
 export const recentActivity: ActivityEvent[] = [
-  { memberName: "Elena Castro", xp: 120, kind: "sesion" },
-  { memberName: "Lucía Ferrer", xp: 100, kind: "sesion" },
-  { memberName: "Noa Jiménez", xp: 40, kind: "clase" },
-  { memberName: "Iván Rueda", xp: 110, kind: "sesion" },
-  { memberName: "Marcos Villa", xp: 40, kind: "clase" },
+  { memberName: "Elena Castro", xp: 120 },
+  { memberName: "Lucía Ferrer", xp: 100 },
+  { memberName: "Noa Jiménez", xp: 90 },
+  { memberName: "Iván Rueda", xp: 110 },
+  { memberName: "Marcos Villa", xp: 100 },
 ];

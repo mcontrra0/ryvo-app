@@ -15,7 +15,6 @@ import {
   clearOpenSession,
   checkAndHandleAbandonedSession,
   recordGpsAnomaly,
-  recordTodayCheckin,
   recordMuscleGroup,
   MIN_MINUTES,
 } from "@/lib/memberStore";
@@ -98,7 +97,6 @@ function CheckinContent() {
     if (!open) {
       // TAP 1 — entrada
       setOpenSession({ memberId, startedAt: Date.now() });
-      recordTodayCheckin({ id: memberId, fullName: name });
       checkGpsSoftly(memberId);
       setMemberName(name);
       setPhase("tap-in-result");
