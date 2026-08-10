@@ -25,23 +25,25 @@ function MiRankingInner() {
   const [claimMsg, setClaimMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    const m = getDeviceMember();
-    setMe(m);
-    setRanking(getRanking());
-    setRewards(getRewardsForGym(GYM_ID));
-    setCashback(getCashbackRuleForGym(GYM_ID));
-    setMinSessions(getMinSessionsPerWeek(GYM_ID));
-    if (m) setClaimEligible(getPendingClaim(m.id).eligible);
+    (async () => {
+      const m = await getDeviceMember();
+      setMe(m);
+      setRanking(await getRanking(GYM_ID));
+      setRewards(await getRewardsForGym(GYM_ID));
+      setCashback(await getCashbackRuleForGym(GYM_ID));
+      setMinSessions(await getMinSessionsPerWeek(GYM_ID));
+      if (m) setClaimEligible((await getPendingClaim(m.id)).eligible);
+    })();
   }, []);
 
-  function handleClaim() {
+  async function handleClaim() {
     if (!me) return;
-    const result = claimForgottenCheckout(me.id);
+    const result = await claimForgottenCheckout(me.id);
     if (result.success) {
       setClaimMsg(`+${result.xp} XP reclamados. Recuerda fichar salida la próxima vez 😉`);
       setClaimEligible(false);
-      setMe(getDeviceMember());
-      setRanking(getRanking());
+      setMe(await getDeviceMember());
+      setRanking(await getRanking(GYM_ID));
     }
   }
 

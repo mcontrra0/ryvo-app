@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { GYM_NAME } from "@/lib/mockData";
+import { GYM_NAME, GYM_ID } from "@/lib/mockData";
 import { Member } from "@/lib/types";
 import { getRanking } from "@/lib/memberStore";
 import { recentActivity } from "@/lib/recentActivity";
@@ -38,9 +38,12 @@ export default function TvPage() {
   const [screenIndex, setScreenIndex] = useState(0); // 0 = ranking, 1..N = announcements[N-1]
 
   useEffect(() => {
-    setRanking(getRanking());
+    const refresh = () => {
+      getRanking(GYM_ID).then(setRanking);
+    };
+    refresh();
     setNow(new Date());
-    const dataInterval = setInterval(() => setRanking(getRanking()), 5000);
+    const dataInterval = setInterval(refresh, 5000);
     const clockInterval = setInterval(() => setNow(new Date()), 1000);
     return () => {
       clearInterval(dataInterval);

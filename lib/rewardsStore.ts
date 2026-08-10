@@ -1,61 +1,73 @@
 "use client";
 
 import { Reward, REWARDS as DEFAULT_REWARDS } from "./types";
+import { supabase } from "./supabase";
+import { getGymBySlug, updateGymSettings } from "./gymStore";
 
-// ============================================================
-// Premios guardados POR GIMNASIO, no de forma global. Ahora mismo solo
-// hay un gimnasio en la demo (GYM_ID = "box-rinconada"), pero la
-// estructura ya está pensada para cuando haya varios: cada CEO edita y
-// ve solo los premios de su propio gimnasio, identificado por su slug.
-//
-// En producción esto sería una tabla `rewards` en Supabase con una
-// columna gym_id — aquí, mientras tanto, se guarda en localStorage bajo
-// una clave por gimnasio dentro de un único objeto.
-// ============================================================
+function rowToReward(row: {
+  id: string;
+  title: string;
+  xp_required: number;
+  announcement: string | null;
+}): Reward {
+  return {
+    id: row.id,
+    title: row.title,
+    xpRequired: row.xp_required,
+    announcement: row.announcement ?? undefined,
+  };
+}
 
-const REWARDS_KEY = "podium_gym_rewards"; // Record<gymId, Reward[]>
+// Si el gimnasio nunca ha personalizado sus premios (rewards_customized
+// = false), arranca con la escalera de ejemplo. En cuanto el CEO guarda
+// algo una vez — aunque sea vaciar la lista a propósito — se respeta lo
+// que haya en la tabla, sea lo que sea.
+export async function getRewardsForGym(gymSlug: string): Promise<Reward[]> {
+  const gym = await getGymBySlug(gymSlug);
+  if (!gym || !supabase) return DEFAULT_REWARDS;
 
-function readJSON<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
+  if (!gym.rewards_customized) return DEFAULT_REWARDS;
+
+  const { data, error } = await supabase
+    .from("rewards")
+    .select("*")
+    .eq("gym_id", gym.id)
+    .order("xp_required", { ascending: true });
+
+  if (error) {
+    console.error("No se pudieron cargar los premios:", error);
+    return DEFAULT_REWARDS;
   }
+  return (data ?? []).map(rowToReward);
 }
 
-function writeJSON(key: string, value: unknown) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(key, JSON.stringify(value));
-}
+export async function saveRewardsForGym(gymSlug: string, rewards: Reward[]) {
+  const gym = await getGymBySlug(gymSlug);
+  if (!gym || !supabase) return;
 
-function readAll(): Record<string, Reward[]> {
-  return readJSON<Record<string, Reward[]>>(REWARDS_KEY, {});
-}
+  // Borrar y volver a insertar es más simple y fiable aquí que
+  // intentar calcular qué cambió fila a fila.
+  const { error: deleteError } = await supabase.from("rewards").delete().eq("gym_id", gym.id);
+  if (deleteError) console.error("No se pudieron borrar los premios anteriores:", deleteError);
 
-// Si el gimnasio todavía no ha personalizado NUNCA sus premios, arranca
-// con la escalera de ejemplo. Pero si el CEO ya guardó algo — aunque sea
-// una lista vacía porque borró todos los premios a propósito — hay que
-// respetar exactamente eso, no volver a los de ejemplo por detrás.
-export function getRewardsForGym(gymId: string): Reward[] {
-  const all = readAll();
-  if (Object.prototype.hasOwnProperty.call(all, gymId)) return all[gymId];
-  return DEFAULT_REWARDS;
-}
+  if (rewards.length > 0) {
+    const { error: insertError } = await supabase.from("rewards").insert(
+      rewards.map((r) => ({
+        gym_id: gym.id,
+        title: r.title,
+        xp_required: r.xpRequired,
+        announcement: r.announcement || null,
+      }))
+    );
+    if (insertError) console.error("No se pudieron guardar los premios:", insertError);
+  }
 
-export function saveRewardsForGym(gymId: string, rewards: Reward[]) {
-  const all = readAll();
-  // guarda siempre ordenado por XP, de menor a mayor — así la escalera
-  // que ve el socio en /mi-ranking tiene sentido sin que el CEO tenga
-  // que ordenarla él mismo
-  all[gymId] = [...rewards].sort((a, b) => a.xpRequired - b.xpRequired);
-  writeJSON(REWARDS_KEY, all);
+  await updateGymSettings(gymSlug, { rewards_customized: true });
 }
 
 export function newBlankReward(): Reward {
   return {
-    id: `reward-${Date.now()}`,
+    id: `temp-${Date.now()}`, // se sustituye por el id real que asigna Supabase al guardar
     title: "",
     xpRequired: 500,
     announcement: "",

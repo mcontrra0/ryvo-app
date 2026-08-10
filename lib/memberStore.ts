@@ -1,73 +1,30 @@
 "use client";
 
 import { Member, MuscleGroupId, getWeekIndex } from "./types";
-import { mockMembers, GYM_ID } from "./mockData";
+import { supabase } from "./supabase";
+import { getGymBySlug } from "./gymStore";
 import { getMinSessionsPerWeek } from "./streakStore";
 
 // ============================================================
-// Backend simulado en localStorage — ver notas de limitación en el
-// README. La lógica de negocio de aquí es la que migrará tal cual a
-// funciones de Supabase (RPC / Edge Functions) cuando conectemos de
-// verdad.
+// Capa de datos real sobre Supabase. Sustituye a la versión anterior
+// en localStorage — la lógica de negocio (racha semanal, cashback,
+// comodín de "olvidé fichar") es la MISMA que antes, solo cambia de
+// dónde vienen y a dónde van los datos.
+//
+// ⚠️ Este código no se ha podido probar en vivo contra una base de
+// datos real desde este entorno (sin acceso de red a Supabase) — está
+// escrito con mucho cuidado siguiendo el esquema exacto de
+// supabase/schema.sql, pero la primera prueba de verdad toca hacerla
+// en local o en Vercel.
 // ============================================================
 
-const REGISTERED_KEY = "podium_registered_members";
-const OVERRIDES_KEY = "podium_member_overrides";
 const DEVICE_MEMBER_KEY = "podium_device_member_id";
-const OPEN_SESSION_KEY = "podium_open_checkin";
-const PENDING_CLAIM_KEY = "podium_pending_claim";
-const MUSCLE_TALLY_KEY = "podium_muscle_tally";
 
 export const MIN_MINUTES = 45;
-const ABANDON_HOURS = 3; // sesión abierta más de esto = se da por olvidada
+const ABANDON_HOURS = 3;
 const COMODIN_COOLDOWN_DAYS = 7;
-const CLAIM_WINDOW_HOURS = 3; // margen para reclamar tras detectarse como olvidada
-const CLAIM_XP = 100; // XP base al reclamar una sesión olvidada (sin bonus por duración)
-
-type Overrides = Record<string, Partial<Member>>;
-
-// ---------- Normalización defensiva ----------
-// Como esto es un "backend" simulado en localStorage sin migraciones
-// reales, cualquier socio registrado con una versión anterior del
-// código puede tener campos nuevos ausentes (ej. sessionDaysThisMonth
-// no existía antes del módulo de cashback). Sin esto, acceder a esos
-// campos revienta la página entera. Todo socio que sale de este
-// fichero pasa por aquí primero, venga de mockData, de un registro
-// nuevo, o de un registro antiguo guardado hace semanas.
-function normalizeMember(partial: Partial<Member> & { id: string }): Member {
-  return {
-    id: partial.id,
-    fullName: partial.fullName ?? "Socio",
-    memberCode: partial.memberCode ?? "----",
-    totalSesionesValidas: partial.totalSesionesValidas ?? 0,
-    ultimaSesion: partial.ultimaSesion ?? null,
-    currentWeekIndex: partial.currentWeekIndex ?? null,
-    currentWeekSessions: partial.currentWeekSessions ?? 0,
-    sesionesUltimos14Dias: partial.sesionesUltimos14Dias ?? 0,
-    sesiones14a28DiasAtras: partial.sesiones14a28DiasAtras ?? 0,
-    xpTotal: partial.xpTotal ?? 0,
-    racha: partial.racha ?? 0,
-    anomaliasGps: partial.anomaliasGps ?? 0,
-    sessionDaysThisMonth: partial.sessionDaysThisMonth ?? [],
-    cashbackMonthKey: partial.cashbackMonthKey ?? null,
-    lastComodinClaim: partial.lastComodinClaim ?? null,
-  };
-}
-
-function readJSON<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function writeJSON(key: string, value: unknown) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(key, JSON.stringify(value));
-}
+const CLAIM_WINDOW_HOURS = 3;
+const CLAIM_XP = 100;
 
 function todayKey(d = new Date()): string {
   return d.toISOString().slice(0, 10); // YYYY-MM-DD
@@ -77,18 +34,83 @@ function monthKey(d = new Date()): string {
   return d.toISOString().slice(0, 7); // YYYY-MM
 }
 
-// ---------- Socios ----------
-
-export function getAllMembers(): Member[] {
-  const registered = readJSON<Member[]>(REGISTERED_KEY, []);
-  const overrides = readJSON<Overrides>(OVERRIDES_KEY, {});
-  const base = mockMembers.map((m) => normalizeMember({ ...m, ...(overrides[m.id] || {}) }));
-  const reg = registered.map((m) => normalizeMember({ ...m, ...(overrides[m.id] || {}) }));
-  return [...base, ...reg];
+interface MemberRow {
+  id: string;
+  full_name: string;
+  member_code: string;
+  xp_total: number;
+  total_sesiones_validas: number;
+  ultima_sesion: string | null;
+  current_week_index: number | null;
+  current_week_sessions: number;
+  racha_semanas: number;
+  cashback_month_key: string | null;
+  session_days_this_month: string[] | null;
+  last_comodin_claim: string | null;
+  anomalias_gps: number;
 }
 
-export function getMemberById(id: string): Member | undefined {
-  return getAllMembers().find((m) => m.id === id);
+interface ActivityRow {
+  sesiones_ultimos_14_dias: number;
+  sesiones_14_28_dias_atras: number;
+}
+
+function rowToMember(row: MemberRow, activity?: ActivityRow): Member {
+  return {
+    id: row.id,
+    fullName: row.full_name,
+    memberCode: row.member_code,
+    totalSesionesValidas: row.total_sesiones_validas,
+    ultimaSesion: row.ultima_sesion,
+    currentWeekIndex: row.current_week_index,
+    currentWeekSessions: row.current_week_sessions,
+    sesionesUltimos14Dias: activity?.sesiones_ultimos_14_dias ?? 0,
+    sesiones14a28DiasAtras: activity?.sesiones_14_28_dias_atras ?? 0,
+    xpTotal: row.xp_total,
+    racha: row.racha_semanas,
+    anomaliasGps: row.anomalias_gps,
+    sessionDaysThisMonth: row.session_days_this_month ?? [],
+    cashbackMonthKey: row.cashback_month_key,
+    lastComodinClaim: row.last_comodin_claim,
+  };
+}
+
+// ---------- Socios ----------
+
+export async function getAllMembers(gymSlug: string): Promise<Member[]> {
+  if (!supabase) return [];
+  const gym = await getGymBySlug(gymSlug);
+  if (!gym) return [];
+
+  const [membersRes, activityRes] = await Promise.all([
+    supabase.from("members").select("*").eq("gym_id", gym.id),
+    supabase.from("member_activity").select("*").eq("gym_id", gym.id),
+  ]);
+
+  if (membersRes.error) {
+    console.error("No se pudieron cargar los socios:", membersRes.error);
+    return [];
+  }
+
+  const activityByMember = new Map<string, ActivityRow>(
+    (activityRes.data ?? []).map((a: { member_id: string } & ActivityRow) => [a.member_id, a])
+  );
+
+  return (membersRes.data as MemberRow[]).map((row) =>
+    rowToMember(row, activityByMember.get(row.id))
+  );
+}
+
+export async function getMemberById(id: string): Promise<Member | null> {
+  if (!supabase) return null;
+
+  const [memberRes, activityRes] = await Promise.all([
+    supabase.from("members").select("*").eq("id", id).single(),
+    supabase.from("member_activity").select("*").eq("member_id", id).maybeSingle(),
+  ]);
+
+  if (memberRes.error || !memberRes.data) return null;
+  return rowToMember(memberRes.data as MemberRow, activityRes.data ?? undefined);
 }
 
 export function getDeviceMemberId(): string | null {
@@ -96,21 +118,25 @@ export function getDeviceMemberId(): string | null {
   return localStorage.getItem(DEVICE_MEMBER_KEY);
 }
 
-// Usado por el sistema de login de demo (lib/auth.ts) para "entrar como"
-// un socio de prueba concreto sin tener que registrarse desde cero.
 export function setDeviceMemberId(memberId: string) {
   if (typeof window === "undefined") return;
   localStorage.setItem(DEVICE_MEMBER_KEY, memberId);
 }
 
-export function getDeviceMember(): Member | null {
+export async function getDeviceMember(): Promise<Member | null> {
   const id = getDeviceMemberId();
   if (!id) return null;
-  return getMemberById(id) ?? null;
+  return getMemberById(id);
 }
 
-export function registerMember(data: { fullName: string; phone?: string }): Member {
-  const registered = readJSON<Member[]>(REGISTERED_KEY, []);
+export async function registerMember(
+  gymSlug: string,
+  data: { fullName: string; phone?: string }
+): Promise<Member | null> {
+  if (!supabase) return null;
+  const gym = await getGymBySlug(gymSlug);
+  if (!gym) return null;
+
   const initials = data.fullName
     .trim()
     .split(/\s+/)
@@ -118,48 +144,38 @@ export function registerMember(data: { fullName: string; phone?: string }): Memb
     .join("")
     .toUpperCase()
     .slice(0, 2);
-  const num = String(registered.length + 1).padStart(2, "0");
+  // Ya no podemos contar "socios registrados hasta ahora" en memoria
+  // como en la versión con localStorage — un sufijo aleatorio evita
+  // colisiones sin necesitar una consulta extra.
+  const memberCode = `${initials}${Math.floor(10 + Math.random() * 90)}`;
 
-  const member: Member = {
-    id: `reg-${Date.now()}`,
-    fullName: data.fullName.trim(),
-    memberCode: `${initials}${num}`,
-    totalSesionesValidas: 0,
-    ultimaSesion: null,
-    currentWeekIndex: null,
-    currentWeekSessions: 0,
-    sesionesUltimos14Dias: 0,
-    sesiones14a28DiasAtras: 0,
-    xpTotal: 0,
-    racha: 0,
-    anomaliasGps: 0,
-    sessionDaysThisMonth: [],
-    cashbackMonthKey: null,
-    lastComodinClaim: null,
-  };
+  const { data: inserted, error } = await supabase
+    .from("members")
+    .insert({
+      gym_id: gym.id,
+      full_name: data.fullName.trim(),
+      phone: data.phone || null,
+      member_code: memberCode,
+    })
+    .select()
+    .single();
 
-  registered.push(member);
-  writeJSON(REGISTERED_KEY, registered);
-  localStorage.setItem(DEVICE_MEMBER_KEY, member.id);
-  return member;
+  if (error || !inserted) {
+    console.error("No se pudo registrar el socio:", error);
+    return null;
+  }
+
+  setDeviceMemberId(inserted.id);
+  return rowToMember(inserted as MemberRow);
 }
 
-function setOverride(memberId: string, patch: Partial<Member>) {
-  const overrides = readJSON<Overrides>(OVERRIDES_KEY, {});
-  overrides[memberId] = { ...overrides[memberId], ...patch };
-  writeJSON(OVERRIDES_KEY, overrides);
-}
-
-// ---------- Racha semanal (no diaria — ver comentario en types.ts) ----------
+// ---------- Racha semanal + cashback (misma lógica que antes) ----------
 
 function computeWeeklyUpdate(
   current: Member,
   weekIdx: number,
   minSessions: number
 ): { currentWeekIndex: number; currentWeekSessions: number; racha: number } {
-  // Sigue siendo la misma semana que la última sesión: solo suma una
-  // sesión más. La racha (semanas CONFIRMADAS) no cambia todavía — se
-  // decide en el momento en que empieza la semana siguiente.
   if (current.currentWeekIndex === weekIdx) {
     return {
       currentWeekIndex: weekIdx,
@@ -168,156 +184,230 @@ function computeWeeklyUpdate(
     };
   }
 
-  // Ha empezado una semana nueva. Primero comprobamos si la que
-  // acaba de terminar llegó al mínimo de sesiones.
   const previousWeekMetGoal =
     current.currentWeekIndex !== null && current.currentWeekSessions >= minSessions;
-
   const isConsecutiveWeek =
     current.currentWeekIndex !== null && weekIdx === current.currentWeekIndex + 1;
 
   let racha: number;
   if (previousWeekMetGoal && isConsecutiveWeek) {
-    racha = current.racha + 1; // semana cumplida justo después de otra racha en curso
+    racha = current.racha + 1;
   } else if (previousWeekMetGoal) {
-    racha = 1; // cumplió, pero hubo un hueco de por medio — empieza de nuevo
+    racha = 1;
   } else {
-    racha = 0; // la semana anterior no llegó al mínimo — racha cortada
+    racha = 0;
   }
 
   return { currentWeekIndex: weekIdx, currentWeekSessions: 1, racha };
 }
 
-function computeUpdatedCashbackDays(current: Member, today: string): {
-  days: string[];
-  monthKey: string;
-} {
+function computeUpdatedCashbackDays(
+  current: Member,
+  today: string
+): { days: string[]; monthKey: string } {
   const mKey = monthKey();
-  const startingDays =
-    current.cashbackMonthKey === mKey ? current.sessionDaysThisMonth : [];
+  const startingDays = current.cashbackMonthKey === mKey ? current.sessionDaysThisMonth : [];
   const days = startingDays.includes(today) ? startingDays : [...startingDays, today];
   return { days, monthKey: mKey };
 }
 
 // XP por sesión general validada (fichaje de entrada + salida, 45+ min)
-export function awardXp(memberId: string, xp: number) {
-  const current = getMemberById(memberId);
+export async function awardXp(memberId: string, xp: number, gymSlug: string) {
+  if (!supabase) return;
+  const current = await getMemberById(memberId);
   if (!current) return;
 
   const today = todayKey();
   const { days, monthKey: mKey } = computeUpdatedCashbackDays(current, today);
-  const weekly = computeWeeklyUpdate(current, getWeekIndex(new Date()), getMinSessionsPerWeek(GYM_ID));
+  const minSessions = await getMinSessionsPerWeek(gymSlug);
+  const weekly = computeWeeklyUpdate(current, getWeekIndex(new Date()), minSessions);
 
-  setOverride(memberId, {
-    xpTotal: current.xpTotal + xp,
-    totalSesionesValidas: current.totalSesionesValidas + 1,
-    ultimaSesion: new Date().toISOString(),
-    currentWeekIndex: weekly.currentWeekIndex,
-    currentWeekSessions: weekly.currentWeekSessions,
-    racha: weekly.racha,
-    sesionesUltimos14Dias: current.sesionesUltimos14Dias + 1,
-    sessionDaysThisMonth: days,
-    cashbackMonthKey: mKey,
+  const { error } = await supabase
+    .from("members")
+    .update({
+      xp_total: current.xpTotal + xp,
+      total_sesiones_validas: current.totalSesionesValidas + 1,
+      ultima_sesion: new Date().toISOString(),
+      current_week_index: weekly.currentWeekIndex,
+      current_week_sessions: weekly.currentWeekSessions,
+      racha_semanas: weekly.racha,
+      session_days_this_month: days,
+      cashback_month_key: mKey,
+    })
+    .eq("id", memberId);
+
+  if (error) console.error("No se pudo otorgar el XP:", error);
+}
+
+// ---------- Fichaje: sesión abierta / abandonada / comodín ----------
+
+export interface OpenCheckin {
+  id: string;
+  memberId: string;
+  startedAt: string;
+}
+
+export async function getOpenCheckin(memberId: string): Promise<OpenCheckin | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from("checkins")
+    .select("id, member_id, started_at")
+    .eq("member_id", memberId)
+    .is("ended_at", null)
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return { id: data.id, memberId: data.member_id, startedAt: data.started_at };
+}
+
+export async function startCheckin(gymSlug: string, memberId: string): Promise<void> {
+  if (!supabase) return;
+  const gym = await getGymBySlug(gymSlug);
+  if (!gym) return;
+  const { error } = await supabase.from("checkins").insert({
+    gym_id: gym.id,
+    member_id: memberId,
+    started_at: new Date().toISOString(),
   });
+  if (error) console.error("No se pudo iniciar el fichaje:", error);
 }
 
-// ---------- Sesión abierta / abandonada / comodín "olvidé fichar" ----------
-
-interface OpenSession {
-  memberId: string;
-  startedAt: number;
+export async function closeCheckin(
+  checkinId: string,
+  minutes: number,
+  valid: boolean,
+  xp: number
+): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase
+    .from("checkins")
+    .update({
+      ended_at: new Date().toISOString(),
+      duration_minutes: minutes,
+      is_valid: valid,
+      xp_awarded: xp,
+    })
+    .eq("id", checkinId);
+  if (error) console.error("No se pudo cerrar el fichaje:", error);
 }
 
-interface PendingClaim {
-  memberId: string;
-  detectedAt: number; // cuándo se detectó como abandonada
-  expiresAt: number;
-}
+// Si la sesión abierta lleva más de ABANDON_HOURS, se marca como
+// abandonada (para poder reclamarla luego con el comodín) en vez de
+// dejar que el siguiente tap la cierre con una duración absurda.
+export async function checkAndHandleAbandonedCheckin(memberId: string): Promise<boolean> {
+  const open = await getOpenCheckin(memberId);
+  if (!open || !supabase) return false;
 
-export function getOpenSession(): OpenSession | null {
-  return readJSON<OpenSession | null>(OPEN_SESSION_KEY, null);
-}
-
-export function setOpenSession(session: OpenSession) {
-  writeJSON(OPEN_SESSION_KEY, session);
-}
-
-export function clearOpenSession() {
-  if (typeof window !== "undefined") localStorage.removeItem(OPEN_SESSION_KEY);
-}
-
-// Si la sesión abierta lleva más de ABANDON_HOURS, se descarta como
-// fichaje "olvidado" y se guarda una reclamación pendiente en vez de
-// intentar cerrarla como si el socio acabara de tocar el NFC ahora mismo.
-export function checkAndHandleAbandonedSession(): boolean {
-  const open = getOpenSession();
-  if (!open) return false;
-  const hoursElapsed = (Date.now() - open.startedAt) / (1000 * 60 * 60);
+  const hoursElapsed = (Date.now() - new Date(open.startedAt).getTime()) / (1000 * 60 * 60);
   if (hoursElapsed < ABANDON_HOURS) return false;
 
-  const claim: PendingClaim = {
-    memberId: open.memberId,
-    detectedAt: Date.now(),
-    expiresAt: Date.now() + CLAIM_WINDOW_HOURS * 60 * 60 * 1000,
-  };
-  writeJSON(PENDING_CLAIM_KEY, claim);
-  clearOpenSession();
+  const { error } = await supabase
+    .from("checkins")
+    .update({ ended_at: new Date().toISOString(), abandoned: true, is_valid: false })
+    .eq("id", open.id);
+  if (error) console.error("No se pudo marcar la sesión como abandonada:", error);
   return true;
 }
 
-export function getPendingClaim(memberId: string): {
+export async function getPendingClaim(memberId: string): Promise<{
   eligible: boolean;
+  checkinId?: string;
   reason?: "no-claim" | "expired" | "cooldown";
-} {
-  const claim = readJSON<PendingClaim | null>(PENDING_CLAIM_KEY, null);
-  if (!claim || claim.memberId !== memberId) return { eligible: false, reason: "no-claim" };
-  if (Date.now() > claim.expiresAt) return { eligible: false, reason: "expired" };
+}> {
+  if (!supabase) return { eligible: false, reason: "no-claim" };
 
-  const member = getMemberById(memberId);
+  const cutoff = new Date(Date.now() - CLAIM_WINDOW_HOURS * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from("checkins")
+    .select("id, ended_at")
+    .eq("member_id", memberId)
+    .eq("abandoned", true)
+    .eq("claimed", false)
+    .gte("ended_at", cutoff)
+    .order("ended_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) return { eligible: false, reason: "no-claim" };
+
+  const member = await getMemberById(memberId);
   if (member?.lastComodinClaim) {
     const daysSince = (Date.now() - new Date(member.lastComodinClaim).getTime()) / 86400000;
     if (daysSince < COMODIN_COOLDOWN_DAYS) return { eligible: false, reason: "cooldown" };
   }
-  return { eligible: true };
+
+  return { eligible: true, checkinId: data.id };
 }
 
-export function claimForgottenCheckout(memberId: string): { success: boolean; xp: number } {
-  const { eligible } = getPendingClaim(memberId);
-  if (!eligible) return { success: false, xp: 0 };
+export async function claimForgottenCheckout(
+  memberId: string
+): Promise<{ success: boolean; xp: number }> {
+  const claim = await getPendingClaim(memberId);
+  if (!claim.eligible || !claim.checkinId || !supabase) return { success: false, xp: 0 };
 
-  awardXp(memberId, CLAIM_XP);
-  setOverride(memberId, { lastComodinClaim: new Date().toISOString() });
-  if (typeof window !== "undefined") localStorage.removeItem(PENDING_CLAIM_KEY);
+  const current = await getMemberById(memberId);
+  if (!current) return { success: false, xp: 0 };
+
+  await supabase
+    .from("checkins")
+    .update({ claimed: true, xp_awarded: CLAIM_XP })
+    .eq("id", claim.checkinId);
+
+  await supabase
+    .from("members")
+    .update({ xp_total: current.xpTotal + CLAIM_XP, last_comodin_claim: new Date().toISOString() })
+    .eq("id", memberId);
+
   return { success: true, xp: CLAIM_XP };
 }
 
 // ---------- Aviso de GPS (nunca bloquea, solo marca) ----------
 
-export function recordGpsAnomaly(memberId: string) {
-  const current = getMemberById(memberId);
+export async function recordGpsAnomaly(memberId: string) {
+  if (!supabase) return;
+  const current = await getMemberById(memberId);
   if (!current) return;
-  setOverride(memberId, { anomaliasGps: current.anomaliasGps + 1 });
+  await supabase.from("members").update({ anomalias_gps: current.anomaliasGps + 1 }).eq("id", memberId);
 }
 
-// ---------- Grupo muscular (analítica descriptiva, opcional para el socio) ----------
+// ---------- Grupo muscular (se guarda en el propio fichaje) ----------
 
-export function recordMuscleGroup(group: MuscleGroupId) {
-  const tally = readJSON<Record<string, number>>(MUSCLE_TALLY_KEY, {});
-  tally[group] = (tally[group] || 0) + 1;
-  writeJSON(MUSCLE_TALLY_KEY, tally);
+export async function recordMuscleGroup(checkinId: string, group: MuscleGroupId) {
+  if (!supabase) return;
+  const { error } = await supabase.from("checkins").update({ muscle_group: group }).eq("id", checkinId);
+  if (error) console.error("No se pudo guardar el grupo muscular:", error);
 }
 
-export function getMuscleTally(): Record<string, number> {
-  return readJSON<Record<string, number>>(MUSCLE_TALLY_KEY, {});
+export async function getMuscleTally(gymSlug: string): Promise<Record<string, number>> {
+  if (!supabase) return {};
+  const gym = await getGymBySlug(gymSlug);
+  if (!gym) return {};
+
+  const { data, error } = await supabase
+    .from("checkins")
+    .select("muscle_group")
+    .eq("gym_id", gym.id)
+    .not("muscle_group", "is", null);
+
+  if (error || !data) return {};
+
+  const tally: Record<string, number> = {};
+  for (const row of data as { muscle_group: string }[]) {
+    tally[row.muscle_group] = (tally[row.muscle_group] || 0) + 1;
+  }
+  return tally;
 }
 
 // ---------- Ranking ----------
 
-export function getRanking(): Member[] {
-  return [...getAllMembers()].sort((a, b) => b.xpTotal - a.xpTotal);
+export async function getRanking(gymSlug: string): Promise<Member[]> {
+  const members = await getAllMembers(gymSlug);
+  return [...members].sort((a, b) => b.xpTotal - a.xpTotal);
 }
 
-export function getRankPosition(memberId: string): number {
-  const ranking = getRanking();
+export async function getRankPosition(memberId: string, gymSlug: string): Promise<number> {
+  const ranking = await getRanking(gymSlug);
   return ranking.findIndex((m) => m.id === memberId) + 1;
 }

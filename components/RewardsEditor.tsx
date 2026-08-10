@@ -14,9 +14,11 @@ export default function RewardsEditor() {
   const [savedMsg, setSavedMsg] = useState(false);
 
   useEffect(() => {
-    setRewards(getRewardsForGym(GYM_ID));
-    setCashback(getCashbackRuleForGym(GYM_ID));
-    setMinSessions(getMinSessionsPerWeek(GYM_ID));
+    (async () => {
+      setRewards(await getRewardsForGym(GYM_ID));
+      setCashback(await getCashbackRuleForGym(GYM_ID));
+      setMinSessions(await getMinSessionsPerWeek(GYM_ID));
+    })();
   }, []);
 
   function updateCashback(patch: Partial<CashbackRule>) {
@@ -42,13 +44,13 @@ export default function RewardsEditor() {
   // Un único botón guarda las dos cosas a la vez — antes había un botón
   // separado para el cashback y otro para los premios, y era fácil
   // pulsar el que no tocaba pensando que ya se había guardado todo.
-  function handleSaveAll() {
+  async function handleSaveAll() {
     const clean = rewards.filter((r) => r.title.trim().length > 0 && r.xpRequired > 0);
-    saveRewardsForGym(GYM_ID, clean);
-    setRewards(getRewardsForGym(GYM_ID)); // recarga ya ordenado por XP
+    await saveRewardsForGym(GYM_ID, clean);
+    setRewards(await getRewardsForGym(GYM_ID)); // recarga ya ordenado por XP
 
-    if (cashback) saveCashbackRuleForGym(GYM_ID, cashback);
-    saveMinSessionsPerWeek(GYM_ID, minSessions);
+    if (cashback) await saveCashbackRuleForGym(GYM_ID, cashback);
+    await saveMinSessionsPerWeek(GYM_ID, minSessions);
 
     setSavedMsg(true);
   }

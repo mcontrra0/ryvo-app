@@ -12,7 +12,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { GYM_NAME } from "@/lib/mockData";
+import { GYM_NAME, GYM_ID } from "@/lib/mockData";
 import { computeRisk, Member, MUSCLE_GROUPS } from "@/lib/types";
 import { getAllMembers, getRanking, getMuscleTally } from "@/lib/memberStore";
 import { getIndexedMonthlyStats } from "@/lib/monthlyStats";
@@ -22,9 +22,8 @@ import RequireRole from "@/components/RequireRole";
 import Logo from "@/components/Logo";
 import RewardsEditor from "@/components/RewardsEditor";
 
-// NOTA: Dashboard del CEO/dueño del gimnasio. En este prototipo es de
-// acceso público para poder probarlo — antes de dárselo a un gimnasio
-// real hace falta ponerle login (ver README).
+// NOTA: Dashboard del CEO/dueño del gimnasio — protegido por login
+// (RequireRole role="ceo", ver components/RequireRole.tsx).
 
 type Tab = "riesgo" | "ranking" | "actividad" | "premios";
 
@@ -35,9 +34,11 @@ export default function DashboardPage() {
   const [muscleTally, setMuscleTally] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    setMembers(getAllMembers());
-    setRanking(getRanking());
-    setMuscleTally(getMuscleTally());
+    (async () => {
+      setMembers(await getAllMembers(GYM_ID));
+      setRanking(await getRanking(GYM_ID));
+      setMuscleTally(await getMuscleTally(GYM_ID));
+    })();
   }, []);
 
   const totalAnomalies = members.reduce((sum, m) => sum + m.anomaliasGps, 0);

@@ -10,10 +10,10 @@ import {
   registerMember,
   awardXp,
   getRankPosition,
-  getOpenSession,
-  setOpenSession,
-  clearOpenSession,
-  checkAndHandleAbandonedSession,
+  getOpenCheckin,
+  startCheckin,
+  closeCheckin,
+  checkAndHandleAbandonedCheckin,
   recordGpsAnomaly,
   recordMuscleGroup,
   MIN_MINUTES,
@@ -47,7 +47,7 @@ interface TapOutResult {
   valid: boolean;
   xp: number;
   rankPosition?: number;
-  memberId: string;
+  checkinId: string;
 }
 
 function checkGpsSoftly(memberId: string) {
@@ -89,14 +89,14 @@ function CheckinContent() {
   const [tapOutResult, setTapOutResult] = useState<TapOutResult | null>(null);
   const [muscleGroupSaved, setMuscleGroupSaved] = useState<MuscleGroupId | null>(null);
 
-  function processGeneralTap(memberId: string, name: string) {
-    checkAndHandleAbandonedSession(); // por si la sesión abierta era de hace horas
+  async function processGeneralTap(memberId: string, name: string) {
+    await checkAndHandleAbandonedCheckin(memberId); // por si la sesión abierta era de hace horas
 
-    const open = getOpenSession();
+    const open = await getOpenCheckin(memberId);
 
     if (!open) {
       // TAP 1 — entrada
-      setOpenSession({ memberId, startedAt: Date.now() });
+      await startCheckin(gymSlug, memberId);
       checkGpsSoftly(memberId);
       setMemberName(name);
       setPhase("tap-in-result");
@@ -104,40 +104,44 @@ function CheckinContent() {
     }
 
     // TAP 2 — salida
-    const minutes = Math.floor((Date.now() - open.startedAt) / 60000);
+    const minutes = Math.floor((Date.now() - new Date(open.startedAt).getTime()) / 60000);
     const valid = minutes >= MIN_MINUTES;
     const xp = valid ? 100 + Math.min(minutes - MIN_MINUTES, 30) : 0;
 
-    clearOpenSession();
-    if (valid) awardXp(open.memberId, xp);
+    await closeCheckin(open.id, minutes, valid, xp);
+    if (valid) await awardXp(open.memberId, xp, gymSlug);
 
     setTapOutResult({
       minutes,
       valid,
       xp,
-      memberId: open.memberId,
-      rankPosition: valid ? getRankPosition(open.memberId) : undefined,
+      checkinId: open.id,
+      rankPosition: valid ? await getRankPosition(open.memberId, gymSlug) : undefined,
     });
     setPhase("tap-out-result");
   }
 
   useEffect(() => {
-    const existing = getDeviceMember();
-    if (!existing) {
-      setPhase("register");
-      return;
-    }
-    processGeneralTap(existing.id, existing.fullName);
+    (async () => {
+      const existing = await getDeviceMember();
+      if (!existing) {
+        setPhase("register");
+        return;
+      }
+      await processGeneralTap(existing.id, existing.fullName);
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function handleRegisterComplete(data: { fullName: string; phone?: string }) {
-    const member = registerMember(data);
-    processGeneralTap(member.id, member.fullName);
+  async function handleRegisterComplete(data: { fullName: string; phone?: string }) {
+    const member = await registerMember(gymSlug, data);
+    if (!member) return; // TODO: mostrar error si Supabase no está configurado/falla
+    await processGeneralTap(member.id, member.fullName);
   }
 
-  function handleMuscleGroupPick(group: MuscleGroupId) {
-    recordMuscleGroup(group);
+  async function handleMuscleGroupPick(group: MuscleGroupId) {
+    if (!tapOutResult) return;
+    await recordMuscleGroup(tapOutResult.checkinId, group);
     setMuscleGroupSaved(group);
   }
 

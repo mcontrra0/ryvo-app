@@ -1,45 +1,26 @@
 "use client";
 
 import { CashbackRule, DEFAULT_CASHBACK_RULE } from "./types";
+import { getGymBySlug, updateGymSettings } from "./gymStore";
 
-// ============================================================
-// Misma idea que rewardsStore.ts: la regla de cashback es POR
-// GIMNASIO, no global. Y como aprendimos con el bug de los premios,
-// distinguimos "nunca se ha tocado" (usar el valor de ejemplo) de
-// "el CEO ya guardó algo explícitamente" (respetarlo tal cual, aunque
-// sea desactivado) con hasOwnProperty, no comprobando si el valor es
-// "vacío".
-// ============================================================
+// La regla de cashback vive como columnas en la fila del gimnasio
+// (tabla `gyms`) — no hace falta una tabla aparte para un solo
+// registro de ajustes por gimnasio.
 
-const CASHBACK_KEY = "podium_gym_cashback"; // Record<gymId, CashbackRule>
-
-function readJSON<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
+export async function getCashbackRuleForGym(gymSlug: string): Promise<CashbackRule> {
+  const gym = await getGymBySlug(gymSlug);
+  if (!gym) return DEFAULT_CASHBACK_RULE;
+  return {
+    enabled: gym.cashback_enabled,
+    minDaysPerMonth: gym.cashback_min_days_per_month,
+    discountEuros: Number(gym.cashback_discount_euros),
+  };
 }
 
-function writeJSON(key: string, value: unknown) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-function readAll(): Record<string, CashbackRule> {
-  return readJSON<Record<string, CashbackRule>>(CASHBACK_KEY, {});
-}
-
-export function getCashbackRuleForGym(gymId: string): CashbackRule {
-  const all = readAll();
-  if (Object.prototype.hasOwnProperty.call(all, gymId)) return all[gymId];
-  return DEFAULT_CASHBACK_RULE;
-}
-
-export function saveCashbackRuleForGym(gymId: string, rule: CashbackRule) {
-  const all = readAll();
-  all[gymId] = rule;
-  writeJSON(CASHBACK_KEY, all);
+export async function saveCashbackRuleForGym(gymSlug: string, rule: CashbackRule) {
+  await updateGymSettings(gymSlug, {
+    cashback_enabled: rule.enabled,
+    cashback_min_days_per_month: rule.minDaysPerMonth,
+    cashback_discount_euros: rule.discountEuros,
+  });
 }
