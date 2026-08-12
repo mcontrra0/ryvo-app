@@ -131,7 +131,7 @@ export async function getDeviceMember(): Promise<Member | null> {
 
 export async function registerMember(
   gymSlug: string,
-  data: { fullName: string; phone?: string }
+  data: { fullName: string; phone: string; pin: string }
 ): Promise<Member | null> {
   if (!supabase) return null;
   const gym = await getGymBySlug(gymSlug);
@@ -144,9 +144,6 @@ export async function registerMember(
     .join("")
     .toUpperCase()
     .slice(0, 2);
-  // Ya no podemos contar "socios registrados hasta ahora" en memoria
-  // como en la versión con localStorage — un sufijo aleatorio evita
-  // colisiones sin necesitar una consulta extra.
   const memberCode = `${initials}${Math.floor(10 + Math.random() * 90)}`;
 
   const { data: inserted, error } = await supabase
@@ -154,7 +151,8 @@ export async function registerMember(
     .insert({
       gym_id: gym.id,
       full_name: data.fullName.trim(),
-      phone: data.phone || null,
+      phone: data.phone.trim(),
+      pin: data.pin,
       member_code: memberCode,
     })
     .select()
@@ -167,6 +165,31 @@ export async function registerMember(
 
   setDeviceMemberId(inserted.id);
   return rowToMember(inserted as MemberRow);
+}
+
+// Acceder desde un dispositivo nuevo (ej. el ordenador de casa) con
+// teléfono + PIN, sin necesidad de volver a fichar desde ese aparato.
+export async function loginWithPhonePin(
+  gymSlug: string,
+  phone: string,
+  pin: string
+): Promise<Member | null> {
+  if (!supabase) return null;
+  const gym = await getGymBySlug(gymSlug);
+  if (!gym) return null;
+
+  const { data, error } = await supabase
+    .from("members")
+    .select("*")
+    .eq("gym_id", gym.id)
+    .eq("phone", phone.trim())
+    .eq("pin", pin)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  setDeviceMemberId(data.id);
+  return rowToMember(data as MemberRow);
 }
 
 // ---------- Racha semanal + cashback (misma lógica que antes) ----------

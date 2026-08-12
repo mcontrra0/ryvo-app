@@ -12,8 +12,71 @@ import {
   getRanking,
   getPendingClaim,
   claimForgottenCheckout,
+  loginWithPhonePin,
 } from "@/lib/memberStore";
 import Logo from "@/components/Logo";
+
+function DeviceLoginForm({ onSuccess }: { onSuccess: (m: Member) => void }) {
+  const [phone, setPhone] = useState("");
+  const [pin, setPin] = useState("");
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit() {
+    setLoading(true);
+    setError(false);
+    const member = await loginWithPhonePin(GYM_ID, phone, pin);
+    setLoading(false);
+    if (!member) {
+      setError(true);
+      return;
+    }
+    onSuccess(member);
+  }
+
+  return (
+    <div className="w-full max-w-xs mt-8 pt-8 border-t border-podium-asphalt/10">
+      <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50 mb-3">
+        ¿Ya tienes cuenta? Accede desde aquí
+      </p>
+      <div className="flex flex-col gap-2">
+        <input
+          value={phone}
+          onChange={(e) => {
+            setPhone(e.target.value);
+            setError(false);
+          }}
+          placeholder="Teléfono"
+          inputMode="tel"
+          className="bg-transparent border border-podium-asphalt/25 rounded-md px-4 py-2.5 text-sm placeholder:text-podium-asphalt/35 focus:outline-none focus:border-podium-track-dark"
+        />
+        <input
+          value={pin}
+          onChange={(e) => {
+            setPin(e.target.value.replace(/\D/g, "").slice(0, 4));
+            setError(false);
+          }}
+          placeholder="PIN de 4 dígitos"
+          inputMode="numeric"
+          type="password"
+          className="bg-transparent border border-podium-asphalt/25 rounded-md px-4 py-2.5 text-sm tracking-[0.4em] placeholder:tracking-normal placeholder:text-podium-asphalt/35 focus:outline-none focus:border-podium-track-dark"
+        />
+        {error && (
+          <p className="font-mono text-xs text-podium-danger">
+            Teléfono o PIN incorrectos.
+          </p>
+        )}
+        <button
+          onClick={handleSubmit}
+          disabled={loading || !phone || pin.length !== 4}
+          className="bg-podium-asphalt text-podium-chalk hover:bg-podium-asphalt/90 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded-md py-2.5 font-mono text-xs uppercase tracking-widest"
+        >
+          {loading ? "Comprobando…" : "Acceder"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function MiRankingInner() {
   const [me, setMe] = useState<Member | null | undefined>(undefined);
@@ -64,6 +127,14 @@ function MiRankingInner() {
         >
           Simular mi primer fichaje →
         </Link>
+
+        <DeviceLoginForm
+          onSuccess={async (member) => {
+            setMe(member);
+            setRanking(await getRanking(GYM_ID));
+            setClaimEligible((await getPendingClaim(member.id)).eligible);
+          }}
+        />
       </main>
     );
   }

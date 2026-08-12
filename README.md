@@ -1,6 +1,17 @@
-# Ryvo — MVP (racha semanal, no diaria)
+# Ryvo — MVP (acceso desde varios dispositivos con teléfono + PIN)
 
 ## Qué cambió en esta vuelta
+
+- **Acceso desde otro dispositivo (`/mi-ranking`).** Hasta ahora, un
+  socio registrado por NFC solo podía ver su ranking desde el mismo
+  móvil donde se registró — no había forma de consultarlo desde casa.
+  Ahora el registro pide también un **PIN de 4 dígitos** (además del
+  teléfono, que pasa a ser obligatorio), y con esos dos datos se puede
+  "acceder" desde cualquier dispositivo nuevo sin volver a fichar. Ver
+  `lib/memberStore.ts` → `loginWithPhonePin`.
+  - ⚠️ El PIN se guarda sin cifrar, igual que las credenciales de
+    `lib/auth.ts` — hay que hashearlo (o mover esto a Supabase Auth de
+    verdad) antes de un piloto con socios reales.
 
 - **Se quita el modo Monitor y el bonus de clase dirigida**, de momento.
   Incluía: la pantalla `/monitor` con PIN, el roster de "quién ha

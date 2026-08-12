@@ -133,7 +133,7 @@ function CheckinContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function handleRegisterComplete(data: { fullName: string; phone?: string }) {
+  async function handleRegisterComplete(data: { fullName: string; phone: string; pin: string }) {
     const member = await registerMember(gymSlug, data);
     if (!member) return; // TODO: mostrar error si Supabase no está configurado/falla
     await processGeneralTap(member.id, member.fullName);
