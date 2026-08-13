@@ -1,6 +1,17 @@
-# Ryvo — MVP (acceso desde varios dispositivos con teléfono + PIN)
+# Ryvo — MVP (panel de administrador multi-gimnasio)
 
 ## Qué cambió en esta vuelta
+
+- **Panel de administrador (`/admin`)** — nuevo rol `admin`, pensado
+  para ti como dueño de la plataforma, no para un gimnasio concreto.
+  Desde ahí puedes crear gimnasios nuevos (nombre + slug, sin tocar el
+  SQL Editor de Supabase) y ver los socios de cualquiera de ellos. Es
+  el primer paso real hacia que Ryvo sea multi-gimnasio de verdad, no
+  solo Box Rinconada.
+- **Enlace desde `/login` hacia `/mi-ranking`.** Un socio real que
+  llegue a `/login` por error (porque no sabe que su pantalla vive en
+  otro sitio) ahora tiene un enlace claro: "¿Eres socio y quieres ver
+  tu ranking? Entra aquí".
 
 - **Acceso desde otro dispositivo (`/mi-ranking`).** Hasta ahora, un
   socio registrado por NFC solo podía ver su ranking desde el mismo
@@ -48,6 +59,7 @@
 | Socio | `socio` | `socio1234` | `/app` → Fichar / Mi ranking (como Lucía Ferrer, socia de prueba) |
 | CEO / dueño | `ceo` | `ceo1234` | `/dashboard` |
 | TV | `tv` | `tv1234` | `/tv` |
+| Admin (tú) | `admin` | `ryvoadmin2026` | `/admin` — gestión de todos los gimnasios |
 
 Entra por `/login` (o desde la landing en `/`, botón "Ver la demo").
 

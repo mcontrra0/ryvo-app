@@ -14,7 +14,7 @@ import { setDeviceMemberId } from "./memberStore";
 // credenciales en texto plano en el código, como aquí.
 // ============================================================
 
-export type Role = "socio" | "ceo" | "tv";
+export type Role = "socio" | "ceo" | "tv" | "admin";
 
 export interface DemoUser {
   username: string;
@@ -44,6 +44,12 @@ export const DEMO_USERS: DemoUser[] = [
     role: "tv",
     displayName: "Pantalla de sala",
   },
+  {
+    username: "admin",
+    password: "ryvoadmin2026",
+    role: "admin",
+    displayName: "Administrador de Ryvo",
+  },
 ];
 
 const SESSION_KEY = "podium_session";
@@ -58,6 +64,7 @@ export const ROLE_HOME: Record<Role, string> = {
   socio: "/app",
   ceo: "/dashboard",
   tv: "/tv",
+  admin: "/admin",
 };
 
 export function login(username: string, password: string): Session | null {

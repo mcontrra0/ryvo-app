@@ -1,19 +1,15 @@
 -- ============================================================
 -- RYVO — Esquema de base de datos (Supabase / Postgres)
--- Actualizado para reflejar todo lo que hemos construido: premios y
--- cashback por gimnasio, racha semanal, grupo muscular, comodín de
--- "olvidé fichar", aviso GPS. (El monitor y el bonus de clase dirigida
--- se han quitado del alcance de momento.)
+-- Versión consolidada — incluye el esquema original + las 4
+-- migraciones que hemos ido aplicando por separado en el proyecto de
+-- producción. Si es un proyecto NUEVO (ej. staging), este único
+-- archivo ya deja todo listo de una vez.
 --
 -- Cómo usarlo: pega TODO este archivo en el SQL Editor de tu proyecto
--- de Supabase y dale a "Run". Crea todas las tablas de una vez.
+-- de Supabase y dale a "Run".
 -- ============================================================
 
 -- ---------- Gimnasios ----------
--- La configuración propia de cada gimnasio (cashback, racha) vive aquí
--- mismo como columnas, en vez de en tablas aparte — es una sola fila
--- de ajustes por gimnasio, no una lista, así que no hace falta unir
--- tablas para leerla.
 create table gyms (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -23,6 +19,7 @@ create table gyms (
   cashback_enabled boolean not null default true,
   cashback_min_days_per_month int not null default 12,
   cashback_discount_euros numeric(6,2) not null default 5,
+  rewards_customized boolean not null default false,  -- distingue "nunca tocado" de "vaciado a propósito"
   created_at timestamptz not null default now()
 );
 
@@ -32,24 +29,23 @@ create table members (
   gym_id uuid not null references gyms(id) on delete cascade,
   full_name text not null,
   phone text,
+  pin text,                                -- PIN de 4 dígitos para acceder desde otro dispositivo
   member_code text not null,
-  device_id text,                          -- identifica el móvil del socio (sustituye al localStorage actual)
+  device_id text,
 
   xp_total int not null default 0,
   total_sesiones_validas int not null default 0,
   ultima_sesion timestamptz,
 
-  -- Racha semanal (ver lib/memberStore.ts → computeWeeklyUpdate)
   current_week_index int,
   current_week_sessions int not null default 0,
   racha_semanas int not null default 0,
 
-  -- Cashback: días distintos entrenados en el mes en curso
-  cashback_month_key text,                 -- "YYYY-MM"
+  cashback_month_key text,
   session_days_this_month text[] not null default '{}',
 
-  last_comodin_claim timestamptz,          -- último uso del comodín "olvidé fichar"
-  anomalias_gps int not null default 0,    -- fichajes marcados lejos del gym (solo aviso)
+  last_comodin_claim timestamptz,
+  anomalias_gps int not null default 0,
 
   created_at timestamptz not null default now(),
   unique (gym_id, member_code)
@@ -59,11 +55,6 @@ create index idx_members_gym on members(gym_id);
 create index idx_members_device on members(device_id);
 
 -- ---------- Fichajes ----------
--- Cada fichaje: se crea al hacer Tap 1 (entrada) y se completa al
--- hacer Tap 2 (salida). Es la fuente de verdad — el Radar de Riesgo se
--- calcula a partir de esto, no de contadores guardados a mano (a
--- diferencia de la versión actual en localStorage, que sí usa
--- contadores manuales porque no tiene una tabla real detrás).
 create table checkins (
   id uuid primary key default gen_random_uuid(),
   gym_id uuid not null references gyms(id) on delete cascade,
@@ -71,10 +62,12 @@ create table checkins (
   started_at timestamptz not null default now(),
   ended_at timestamptz,
   duration_minutes int,
-  is_valid boolean,                        -- true si duration_minutes >= 45
+  is_valid boolean,
   xp_awarded int default 0,
-  muscle_group text,                       -- selector opcional al fichar salida
-  flagged_anomaly boolean default false,   -- aviso GPS, ver checkin/page.tsx
+  muscle_group text,
+  flagged_anomaly boolean default false,
+  abandoned boolean not null default false,  -- sesión olvidada, pendiente de reclamar
+  claimed boolean not null default false,    -- ya reclamada con el comodín
   created_at timestamptz not null default now()
 );
 
@@ -87,17 +80,13 @@ create table rewards (
   gym_id uuid not null references gyms(id) on delete cascade,
   title text not null,
   xp_required int not null,
-  announcement text,                       -- texto libre opcional que escribe el CEO
+  announcement text,
   created_at timestamptz not null default now()
 );
 
 create index idx_rewards_gym on rewards(gym_id, xp_required);
 
 -- ---------- Vista: actividad reciente por socio ----------
--- Esta es la mejora real de tener una tabla de verdad: los últimos
--- 14/28 días se calculan al vuelo sobre fechas reales, no con un
--- contador que se puede desincronizar con el tiempo (que es justo la
--- limitación que tiene ahora mismo la versión en localStorage).
 create or replace view member_activity as
 select
   m.id as member_id,
@@ -112,11 +101,20 @@ left join checkins c on c.member_id = m.id
 group by m.id, m.gym_id, m.full_name;
 
 -- ---------- Row Level Security ----------
--- Activado ya, pero sin políticas todavía — de momento el backend usa
--- la service_role key (se salta RLS), que es lo normal mientras no
--- haya autenticación real de verdad conectada (fase siguiente: migrar
--- el login de demo actual a Supabase Auth).
-alter table gyms enable row level security;
-alter table members enable row level security;
-alter table checkins enable row level security;
-alter table rewards enable row level security;
+-- Desactivado por ahora — no hay Supabase Auth real conectado todavía
+-- (seguimos con el login de demo en lib/auth.ts), así que no hay
+-- políticas con sentido que escribir. Con RLS activado y sin políticas,
+-- Postgres bloquea TODO acceso por defecto, incluida la clave anon que
+-- usa la app.
+--
+-- ⚠️ TODO fase autenticación real: activarlo con políticas de verdad
+-- antes de un piloto con socios reales.
+alter table gyms disable row level security;
+alter table members disable row level security;
+alter table checkins disable row level security;
+alter table rewards disable row level security;
+
+-- ---------- Semilla del gimnasio piloto ----------
+insert into gyms (name, slug, nfc_token)
+values ('Box Rinconada', 'box-rinconada', 'pilot-token-cambiar-en-produccion')
+on conflict (slug) do nothing;

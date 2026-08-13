@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GYM_NAME } from "@/lib/mockData";
 import { login, ROLE_HOME } from "@/lib/auth";
@@ -70,7 +71,14 @@ function LoginContent() {
           </button>
         </div>
 
-        <p className="font-mono text-[10px] text-podium-asphalt/30 mt-6 text-center leading-relaxed">
+        <Link
+          href="/mi-ranking"
+          className="block text-center font-mono text-xs uppercase tracking-widest text-podium-track-dark underline mt-6"
+        >
+          ¿Eres socio y quieres ver tu ranking? Entra aquí
+        </Link>
+
+        <p className="font-mono text-[10px] text-podium-asphalt/30 mt-4 text-center leading-relaxed">
           Demo — pide las 3 credenciales de prueba (socio / CEO / TV)
         </p>
       </div>

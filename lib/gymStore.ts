@@ -57,3 +57,36 @@ export async function updateGymSettings(
   if (error) console.error("No se pudo actualizar el gimnasio:", error);
   invalidate(slug);
 }
+
+// ---------- Panel de administrador (todos los gimnasios) ----------
+
+export async function getAllGyms(): Promise<GymRecord[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.from("gyms").select("*").order("created_at", { ascending: false });
+  if (error) {
+    console.error("No se pudieron cargar los gimnasios:", error);
+    return [];
+  }
+  return data as GymRecord[];
+}
+
+export async function createGym(data: {
+  name: string;
+  slug: string;
+}): Promise<{ success: boolean; error?: string }> {
+  if (!supabase) return { success: false, error: "Supabase no está configurado" };
+
+  const nfcToken = `${data.slug}-${Math.random().toString(36).slice(2, 10)}`;
+
+  const { error } = await supabase.from("gyms").insert({
+    name: data.name.trim(),
+    slug: data.slug.trim().toLowerCase(),
+    nfc_token: nfcToken,
+  });
+
+  if (error) {
+    console.error("No se pudo crear el gimnasio:", error);
+    return { success: false, error: error.message };
+  }
+  return { success: true };
+}
