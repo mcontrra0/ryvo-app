@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSession, logout } from "@/lib/auth";
-import { getAllGyms, createGym, GymRecord } from "@/lib/gymStore";
+import { getAllGyms, createGym, updateGymIdentity, deleteGym, GymRecord } from "@/lib/gymStore";
 import { getAllMembers } from "@/lib/memberStore";
 import { Member } from "@/lib/types";
 import Logo from "@/components/Logo";
@@ -31,6 +31,12 @@ export default function AdminPage() {
   const [selectedGym, setSelectedGym] = useState<GymRecord | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
+
+  const [editingGymId, setEditingGymId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editSlug, setEditSlug] = useState("");
+  const [editMsg, setEditMsg] = useState<string | null>(null);
+  const [busyGymId, setBusyGymId] = useState<string | null>(null);
 
   useEffect(() => {
     const session = getSession();
@@ -69,6 +75,52 @@ export default function AdminPage() {
     setLoadingMembers(true);
     setMembers(await getAllMembers(gym.slug));
     setLoadingMembers(false);
+  }
+
+  function startEdit(gym: GymRecord) {
+    setEditingGymId(gym.id);
+    setEditName(gym.name);
+    setEditSlug(gym.slug);
+    setEditMsg(null);
+  }
+
+  function cancelEdit() {
+    setEditingGymId(null);
+    setEditMsg(null);
+  }
+
+  async function handleSaveEdit(gymId: string) {
+    if (!editName.trim() || !editSlug.trim()) return;
+    setBusyGymId(gymId);
+    const result = await updateGymIdentity(gymId, { name: editName, slug: editSlug });
+    setBusyGymId(null);
+    if (result.success) {
+      setEditingGymId(null);
+      loadGyms();
+      if (selectedGym?.id === gymId) {
+        setSelectedGym({ ...selectedGym, name: editName.trim(), slug: editSlug.trim().toLowerCase() });
+      }
+    } else {
+      setEditMsg(`✗ Error: ${result.error ?? "no se pudo guardar"}`);
+    }
+  }
+
+  async function handleDeleteGym(gym: GymRecord) {
+    const confirmed = window.confirm(
+      `¿Seguro que quieres borrar "${gym.name}"?\n\nEsto borra TAMBIÉN a todos sus socios, fichajes y premios — no se puede deshacer.`
+    );
+    if (!confirmed) return;
+
+    setBusyGymId(gym.id);
+    const result = await deleteGym(gym.id);
+    setBusyGymId(null);
+
+    if (result.success) {
+      if (selectedGym?.id === gym.id) setSelectedGym(null);
+      loadGyms();
+    } else {
+      alert(`No se pudo borrar: ${result.error ?? "error desconocido"}`);
+    }
   }
 
   function handleLogout() {
@@ -138,20 +190,76 @@ export default function AdminPage() {
           {loadingGyms ? "Cargando…" : `${gyms.length} gimnasio(s)`}
         </p>
         <div className="flex flex-col gap-2 mb-8">
-          {gyms.map((gym) => (
-            <button
-              key={gym.id}
-              onClick={() => handleSelectGym(gym)}
-              className={`text-left rounded-md border px-4 py-3 transition-colors ${
-                selectedGym?.id === gym.id
-                  ? "border-podium-track-dark bg-podium-track/10"
-                  : "border-podium-asphalt/12 bg-white hover:border-podium-asphalt/30"
-              }`}
-            >
-              <p className="font-medium">{gym.name}</p>
-              <p className="font-mono text-xs text-podium-asphalt/50">/checkin?gym={gym.slug}</p>
-            </button>
-          ))}
+          {gyms.map((gym) => {
+            if (editingGymId === gym.id) {
+              return (
+                <div
+                  key={gym.id}
+                  className="rounded-md border border-podium-track-dark bg-podium-track/5 px-4 py-3"
+                >
+                  <div className="flex flex-col sm:flex-row gap-2 mb-2">
+                    <input
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="flex-1 bg-white border border-podium-asphalt/20 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-podium-track-dark"
+                    />
+                    <input
+                      value={editSlug}
+                      onChange={(e) => setEditSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
+                      className="flex-1 bg-white border border-podium-asphalt/20 rounded-md px-3 py-2 text-sm font-mono focus:outline-none focus:border-podium-track-dark"
+                    />
+                  </div>
+                  {editMsg && <p className="font-mono text-xs text-podium-danger mb-2">{editMsg}</p>}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleSaveEdit(gym.id)}
+                      disabled={busyGymId === gym.id}
+                      className="bg-podium-track hover:bg-podium-track-dark disabled:opacity-40 transition-colors rounded-md px-4 py-1.5 font-mono text-xs uppercase tracking-widest"
+                    >
+                      {busyGymId === gym.id ? "Guardando…" : "Guardar"}
+                    </button>
+                    <button
+                      onClick={cancelEdit}
+                      className="font-mono text-xs uppercase tracking-widest text-podium-asphalt/50 hover:text-podium-asphalt px-2"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div
+                key={gym.id}
+                className={`flex items-center justify-between gap-3 rounded-md border px-4 py-3 transition-colors ${
+                  selectedGym?.id === gym.id
+                    ? "border-podium-track-dark bg-podium-track/10"
+                    : "border-podium-asphalt/12 bg-white hover:border-podium-asphalt/30"
+                }`}
+              >
+                <button onClick={() => handleSelectGym(gym)} className="text-left min-w-0 flex-1">
+                  <p className="font-medium truncate">{gym.name}</p>
+                  <p className="font-mono text-xs text-podium-asphalt/50">/checkin?gym={gym.slug}</p>
+                </button>
+                <div className="flex items-center gap-3 shrink-0">
+                  <button
+                    onClick={() => startEdit(gym)}
+                    className="font-mono text-xs uppercase tracking-widest text-podium-asphalt/50 hover:text-podium-asphalt"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDeleteGym(gym)}
+                    disabled={busyGymId === gym.id}
+                    className="font-mono text-xs uppercase tracking-widest text-podium-danger hover:underline disabled:opacity-40"
+                  >
+                    {busyGymId === gym.id ? "Borrando…" : "Borrar"}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Socios del gimnasio seleccionado */}

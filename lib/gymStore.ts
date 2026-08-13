@@ -90,3 +90,38 @@ export async function createGym(data: {
   }
   return { success: true };
 }
+
+export async function updateGymIdentity(
+  gymId: string,
+  patch: { name: string; slug: string }
+): Promise<{ success: boolean; error?: string }> {
+  if (!supabase) return { success: false, error: "Supabase no está configurado" };
+
+  const { error } = await supabase
+    .from("gyms")
+    .update({ name: patch.name.trim(), slug: patch.slug.trim().toLowerCase() })
+    .eq("id", gymId);
+
+  if (error) {
+    console.error("No se pudo actualizar el gimnasio:", error);
+    return { success: false, error: error.message };
+  }
+  cache.clear(); // más simple que rastrear qué slug antiguo/nuevo invalidar
+  return { success: true };
+}
+
+// ⚠️ Borra el gimnasio Y TODO lo que cuelga de él (socios, fichajes,
+// premios) — la tabla tiene "on delete cascade" en esas relaciones.
+// No hay confirmación aquí dentro a propósito: la pantalla que llama a
+// esto es la responsable de pedir confirmación antes.
+export async function deleteGym(gymId: string): Promise<{ success: boolean; error?: string }> {
+  if (!supabase) return { success: false, error: "Supabase no está configurado" };
+
+  const { error } = await supabase.from("gyms").delete().eq("id", gymId);
+  if (error) {
+    console.error("No se pudo borrar el gimnasio:", error);
+    return { success: false, error: error.message };
+  }
+  cache.clear();
+  return { success: true };
+}

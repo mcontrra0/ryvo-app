@@ -1,6 +1,13 @@
-# Ryvo — MVP (panel de administrador multi-gimnasio)
+# Ryvo — MVP (editar y borrar gimnasios desde /admin)
 
 ## Qué cambió en esta vuelta
+
+- **Editar y borrar gimnasios desde `/admin`.** Antes solo se podían
+  crear y ver. Ahora cada gimnasio de la lista tiene "Editar" (nombre y
+  slug, en línea) y "Borrar" — con confirmación explícita, porque
+  borrar un gimnasio arrastra también a todos sus socios, fichajes y
+  premios (la base de datos lo hace en cascada). Ver `lib/gymStore.ts`
+  → `updateGymIdentity` / `deleteGym`.
 
 - **Panel de administrador (`/admin`)** — nuevo rol `admin`, pensado
   para ti como dueño de la plataforma, no para un gimnasio concreto.
