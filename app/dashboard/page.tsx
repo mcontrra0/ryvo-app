@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
+  Bar,
+  BarChart,
   CartesianGrid,
   Legend,
   Line,
@@ -15,7 +17,7 @@ import {
 import { GYM_NAME, GYM_ID } from "@/lib/mockData";
 import { computeRisk, Member, MUSCLE_GROUPS } from "@/lib/types";
 import { getAllMembers, getRanking, getMuscleTally } from "@/lib/memberStore";
-import { getIndexedMonthlyStats } from "@/lib/monthlyStats";
+import { getGymAnalytics, indexMonthlyStats, GymAnalytics } from "@/lib/analyticsStore";
 import MemberRiskRow from "@/components/MemberRiskRow";
 import ChartErrorBoundary from "@/components/ChartErrorBoundary";
 import RequireRole from "@/components/RequireRole";
@@ -25,19 +27,23 @@ import RewardsEditor from "@/components/RewardsEditor";
 // NOTA: Dashboard del CEO/dueño del gimnasio — protegido por login
 // (RequireRole role="ceo", ver components/RequireRole.tsx).
 
-type Tab = "riesgo" | "ranking" | "actividad" | "premios";
+type Tab = "resumen" | "riesgo" | "ranking" | "actividad" | "premios";
 
 export default function DashboardPage() {
-  const [tab, setTab] = useState<Tab>("riesgo");
+  const [tab, setTab] = useState<Tab>("resumen");
   const [members, setMembers] = useState<Member[]>([]);
   const [ranking, setRanking] = useState<Member[]>([]);
   const [muscleTally, setMuscleTally] = useState<Record<string, number>>({});
+  const [analytics, setAnalytics] = useState<GymAnalytics | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       setMembers(await getAllMembers(GYM_ID));
       setRanking(await getRanking(GYM_ID));
       setMuscleTally(await getMuscleTally(GYM_ID));
+      setAnalytics(await getGymAnalytics(GYM_ID));
+      setLoading(false);
     })();
   }, []);
 
@@ -49,7 +55,26 @@ export default function DashboardPage() {
   const descenso = withRisk.filter((x) => x.risk === "descenso");
   const riesgo = withRisk.filter((x) => x.risk === "riesgo");
 
+  const avgRacha = members.length
+    ? Math.round((members.reduce((sum, m) => sum + m.racha, 0) / members.length) * 10) / 10
+    : 0;
+
+  const sessionsThisWeek = analytics?.sessionsByDay.slice(7, 14).reduce((s, d) => s + d.count, 0) ?? 0;
+  const sessionsPrevWeek = analytics?.sessionsByDay.slice(0, 7).reduce((s, d) => s + d.count, 0) ?? 0;
+  const weekChangePct =
+    sessionsPrevWeek > 0
+      ? Math.round(((sessionsThisWeek - sessionsPrevWeek) / sessionsPrevWeek) * 100)
+      : sessionsThisWeek > 0
+      ? 100
+      : 0;
+
+  const busiestHour = analytics?.peakHours.reduce(
+    (best, h) => (h.count > best.count ? h : best),
+    { hour: 0, count: 0 }
+  );
+
   const titles: Record<Tab, string> = {
+    resumen: "Resumen",
     riesgo: "Radar de riesgo",
     ranking: "Ranking de jugadores",
     actividad: "Actividad mensual",
@@ -80,6 +105,9 @@ export default function DashboardPage() {
 
         {/* Tabs */}
         <div className="flex gap-2 mt-6 mb-8 border-b border-podium-asphalt/10 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <TabButton active={tab === "resumen"} onClick={() => setTab("resumen")}>
+            Resumen
+          </TabButton>
           <TabButton active={tab === "riesgo"} onClick={() => setTab("riesgo")}>
             Radar de riesgo
           </TabButton>
@@ -93,6 +121,117 @@ export default function DashboardPage() {
             Premios
           </TabButton>
         </div>
+
+        {tab === "resumen" && (
+          <>
+            <p className="text-podium-asphalt/60 mb-6 max-w-md">
+              Lo esencial de un vistazo — sin entrar en ninguna pestaña más.
+            </p>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+              <KpiCard label="Socios activos" value={activos.length} emoji="🟢" />
+              <KpiCard label="En riesgo" value={riesgo.length} emoji="🔴" />
+              <KpiCard label="Racha media" value={`${avgRacha}`} suffix="sem." emoji="🔥" />
+              <KpiCard
+                label="Sesiones/semana"
+                value={sessionsThisWeek}
+                emoji="📈"
+                trend={weekChangePct}
+              />
+            </div>
+
+            {!loading && analytics && (
+              <>
+                <div className="rounded-md border border-podium-asphalt/10 bg-white p-4 mb-4 min-w-0">
+                  <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50 mb-4">
+                    Sesiones por día — últimos 14 días
+                  </p>
+                  <ChartErrorBoundary fallback={<ChartFallback />}>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <BarChart data={analytics.sessionsByDay}>
+                        <CartesianGrid stroke="#1b1b1f" strokeOpacity={0.08} vertical={false} />
+                        <XAxis
+                          dataKey="label"
+                          tick={{ fontSize: 10, fill: "#1b1b1f99" }}
+                          axisLine={{ stroke: "#1b1b1f22" }}
+                          tickLine={false}
+                          interval={1}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 11, fill: "#1b1b1f99" }}
+                          axisLine={false}
+                          tickLine={false}
+                          width={28}
+                          allowDecimals={false}
+                        />
+                        <Tooltip
+                          cursor={{ fill: "#8fd40015" }}
+                          contentStyle={{ borderRadius: 8, border: "1px solid #1b1b1f1a", fontSize: 12 }}
+                        />
+                        <Bar dataKey="count" name="Sesiones" fill="#6ea300" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </ChartErrorBoundary>
+                </div>
+
+                <div className="rounded-md border border-podium-asphalt/10 bg-white p-4 mb-4 min-w-0">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50">
+                      Horas punta
+                    </p>
+                    {busiestHour && busiestHour.count > 0 && (
+                      <p className="font-mono text-[11px] text-podium-asphalt/50">
+                        Pico: <span className="text-podium-asphalt font-semibold">{busiestHour.hour}h</span>
+                      </p>
+                    )}
+                  </div>
+                  <ChartErrorBoundary fallback={<ChartFallback />}>
+                    <ResponsiveContainer width="100%" height={180}>
+                      <BarChart data={analytics.peakHours}>
+                        <CartesianGrid stroke="#1b1b1f" strokeOpacity={0.08} vertical={false} />
+                        <XAxis
+                          dataKey="hour"
+                          tickFormatter={(h) => `${h}h`}
+                          tick={{ fontSize: 10, fill: "#1b1b1f99" }}
+                          axisLine={{ stroke: "#1b1b1f22" }}
+                          tickLine={false}
+                          interval={2}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 11, fill: "#1b1b1f99" }}
+                          axisLine={false}
+                          tickLine={false}
+                          width={28}
+                          allowDecimals={false}
+                        />
+                        <Tooltip
+                          cursor={{ fill: "#c9a22715" }}
+                          contentStyle={{ borderRadius: 8, border: "1px solid #1b1b1f1a", fontSize: 12 }}
+                          labelFormatter={(h) => `${h}h`}
+                        />
+                        <Bar dataKey="count" name="Fichajes" fill="#c9a227" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </ChartErrorBoundary>
+                  <p className="font-mono text-[10px] text-podium-asphalt/30 mt-2">
+                    Útil para decidir cuándo reforzar personal o abrir clases nuevas.
+                  </p>
+                </div>
+              </>
+            )}
+
+            {riesgo.length > 0 && (
+              <div className="rounded-md border border-podium-danger/30 bg-podium-danger/5 px-4 py-3 mt-4">
+                <p className="font-mono text-xs text-podium-danger">
+                  🔴 Tienes {riesgo.length} socio(s) en riesgo real de baja —{" "}
+                  <button onClick={() => setTab("riesgo")} className="underline font-semibold">
+                    revísalos ahora
+                  </button>
+                </p>
+              </div>
+            )}
+          </>
+        )}
 
         {tab === "riesgo" && (
           <>
@@ -182,21 +321,14 @@ export default function DashboardPage() {
             </p>
             <div className="rounded-md border border-podium-asphalt/10 bg-white p-4 mb-4 min-w-0">
               <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50 mb-4">
-                Crecimiento relativo (Mar = 100)
+                Crecimiento relativo (primer mes = 100)
               </p>
-              <ChartErrorBoundary
-                fallback={
-                  <p className="font-mono text-xs text-podium-asphalt/40 py-10 text-center">
-                    No se pudo mostrar la gráfica en este dispositivo. Los
-                    datos siguen intactos — prueba a recargar la página.
-                  </p>
-                }
-              >
+              <ChartErrorBoundary fallback={<ChartFallback />}>
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={getIndexedMonthlyStats()}>
+                <LineChart data={analytics ? indexMonthlyStats(analytics.monthlyStats) : []}>
                   <CartesianGrid stroke="#1b1b1f" strokeOpacity={0.08} vertical={false} />
                   <XAxis
-                    dataKey="mes"
+                    dataKey="month"
                     tick={{ fontSize: 12, fill: "#1b1b1f99" }}
                     axisLine={{ stroke: "#1b1b1f22" }}
                     tickLine={false}
@@ -234,7 +366,7 @@ export default function DashboardPage() {
               </ChartErrorBoundary>
             </div>
             <p className="font-mono text-[10px] text-podium-asphalt/30 mb-8">
-              Datos de ejemplo — en producción se calculan directamente de tus fichajes reales.
+              Calculado a partir de tus fichajes reales de los últimos 6 meses.
             </p>
 
             {totalMuscleTaps > 0 && (
@@ -273,6 +405,15 @@ export default function DashboardPage() {
       </div>
     </main>
     </RequireRole>
+  );
+}
+
+function ChartFallback() {
+  return (
+    <p className="font-mono text-xs text-podium-asphalt/40 py-10 text-center">
+      No se pudo mostrar la gráfica en este dispositivo. Los datos siguen
+      intactos — prueba a recargar la página.
+    </p>
   );
 }
 
@@ -322,6 +463,42 @@ function TabButton({
     >
       {children}
     </button>
+  );
+}
+
+function KpiCard({
+  label,
+  value,
+  emoji,
+  suffix,
+  trend,
+}: {
+  label: string;
+  value: number | string;
+  emoji: string;
+  suffix?: string;
+  trend?: number;
+}) {
+  return (
+    <div className="rounded-md border border-podium-asphalt/10 bg-white px-4 py-4 text-center">
+      <p className="text-xl mb-1">{emoji}</p>
+      <p className="font-display text-2xl tabular">
+        {value}
+        {suffix && <span className="text-sm font-sans ml-1 text-podium-asphalt/50">{suffix}</span>}
+      </p>
+      <p className="font-mono text-[10px] uppercase tracking-widest text-podium-asphalt/50">
+        {label}
+      </p>
+      {trend !== undefined && trend !== 0 && (
+        <p
+          className={`font-mono text-[10px] mt-1 ${
+            trend > 0 ? "text-podium-mint" : "text-podium-danger"
+          }`}
+        >
+          {trend > 0 ? "▲" : "▼"} {Math.abs(trend)}% vs. semana anterior
+        </p>
+      )}
+    </div>
   );
 }
 

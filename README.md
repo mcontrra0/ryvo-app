@@ -1,6 +1,20 @@
-# Ryvo — MVP (editar y borrar gimnasios desde /admin)
+# Ryvo — MVP (dashboard del CEO rediseñado, con analítica real)
 
 ## Qué cambió en esta vuelta
+
+- **Nueva pestaña "Resumen" en `/dashboard`, y es la primera que se ve.**
+  Antes había que entrar en una pestaña concreta para saber si algo iba
+  mal; ahora el CEO ve de un vistazo: socios activos, en riesgo, racha
+  media, y sesiones de esta semana comparadas con la anterior (▲/▼ %).
+  Debajo, dos gráficas nuevas: **sesiones por día** (últimos 14 días) y
+  **horas punta** (0-23h, útil para decidir cuándo reforzar personal).
+  Si hay socios en riesgo, aparece un aviso directo con botón para ir
+  al Radar.
+- **La gráfica de "Actividad mensual" deja de usar datos de ejemplo.**
+  Desde que conectamos Supabase, esa gráfica seguía mostrando la lista
+  fija de `lib/monthlyStats.ts` (que ya se ha eliminado) — ahora se
+  calcula de verdad a partir de los fichajes reales de los últimos 6
+  meses. Ver `lib/analyticsStore.ts` → `getGymAnalytics`.
 
 - **Editar y borrar gimnasios desde `/admin`.** Antes solo se podían
   crear y ver. Ahora cada gimnasio de la lista tiene "Editar" (nombre y
