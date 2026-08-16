@@ -55,8 +55,14 @@ export default function DashboardPage() {
   const descenso = withRisk.filter((x) => x.risk === "descenso");
   const riesgo = withRisk.filter((x) => x.risk === "riesgo");
 
-  const avgRacha = members.length
-    ? Math.round((members.reduce((sum, m) => sum + m.racha, 0) / members.length) * 10) / 10
+  // Solo cuenta socios con racha activa (>0) — si la calculásemos
+  // sobre todos, los socios inactivos (racha=0) arrastrarían la media
+  // hacia abajo y el número dejaría de significar nada útil.
+  const membersWithStreak = members.filter((m) => m.racha > 0);
+  const avgRacha = membersWithStreak.length
+    ? Math.round(
+        (membersWithStreak.reduce((sum, m) => sum + m.racha, 0) / membersWithStreak.length) * 10
+      ) / 10
     : 0;
 
   const sessionsThisWeek = analytics?.sessionsByDay.slice(7, 14).reduce((s, d) => s + d.count, 0) ?? 0;
@@ -104,7 +110,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mt-6 mb-8 border-b border-podium-asphalt/10 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex flex-nowrap gap-2 mt-6 mb-8 border-b border-podium-asphalt/10 overflow-x-auto overflow-y-hidden -mx-4 px-4 sm:mx-0 sm:px-0">
           <TabButton active={tab === "resumen"} onClick={() => setTab("resumen")}>
             Resumen
           </TabButton>
@@ -131,7 +137,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
               <KpiCard label="Socios activos" value={activos.length} emoji="🟢" />
               <KpiCard label="En riesgo" value={riesgo.length} emoji="🔴" />
-              <KpiCard label="Racha media" value={`${avgRacha}`} suffix="sem." emoji="🔥" />
+              <KpiCard label="Racha media (activos)" value={`${avgRacha}`} suffix="sem." emoji="🔥" />
               <KpiCard
                 label="Sesiones/semana"
                 value={sessionsThisWeek}
