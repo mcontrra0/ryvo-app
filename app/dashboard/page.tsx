@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Bar,
   BarChart,
@@ -18,6 +18,7 @@ import { GYM_NAME, GYM_ID } from "@/lib/mockData";
 import { computeRisk, Member, MUSCLE_GROUPS } from "@/lib/types";
 import { getAllMembers, getRanking, getMuscleTally } from "@/lib/memberStore";
 import { getGymAnalytics, indexMonthlyStats, GymAnalytics } from "@/lib/analyticsStore";
+import { logout } from "@/lib/auth";
 import MemberRiskRow from "@/components/MemberRiskRow";
 import ChartErrorBoundary from "@/components/ChartErrorBoundary";
 import RequireRole from "@/components/RequireRole";
@@ -30,12 +31,18 @@ import RewardsEditor from "@/components/RewardsEditor";
 type Tab = "resumen" | "riesgo" | "ranking" | "actividad" | "premios";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("resumen");
   const [members, setMembers] = useState<Member[]>([]);
   const [ranking, setRanking] = useState<Member[]>([]);
   const [muscleTally, setMuscleTally] = useState<Record<string, number>>({});
   const [analytics, setAnalytics] = useState<GymAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
+
+  function handleLogout() {
+    logout();
+    router.push("/login");
+  }
 
   useEffect(() => {
     (async () => {
@@ -101,12 +108,12 @@ export default function DashboardPage() {
               {titles[tab]}
             </h1>
           </div>
-          <Link
-            href="/app"
+          <button
+            onClick={handleLogout}
             className="font-mono text-xs uppercase tracking-widest text-podium-asphalt/50 hover:text-podium-asphalt underline shrink-0"
           >
-            ← Volver
-          </Link>
+            Cerrar sesión
+          </button>
         </div>
 
         {/* Tabs */}
