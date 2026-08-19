@@ -1,6 +1,19 @@
-# Ryvo — MVP (racha personal, estilo Duolingo)
+# Ryvo — MVP (logo real, ya no dibujado a mano)
 
 ## Qué cambió en esta vuelta
+
+- **Logo real integrado.** Sustituidos el icono y el wordmark que
+  habíamos dibujado a mano en SVG por los archivos reales
+  (`public/brand/`). El icono ya venía a color (verde lima) y funciona
+  en cualquier fondo; el wordmark original es un contorno claro pensado
+  para fondo oscuro, así que generé una segunda versión oscura
+  (`ryvo-text-dark.png`) para usarlo en las pantallas de fondo claro,
+  que son casi todas ahora — `components/Logo.tsx` elige la variante
+  correcta según la prop `tone`. Favicon y manifest de la PWA
+  actualizados también con el icono real.
+- ⚠️ Son imágenes PNG, no vectores — a tamaños muy grandes podrían
+  perder nitidez. Si en algún momento tienes las versiones SVG/vector
+  originales, sustituir estos PNG por SVG es una mejora sencilla.
 
 - **La racha deja de ser cosa del gimnasio y pasa a ser 100% del
   socio.** Cada uno elige su propio objetivo semanal (1-6 días,

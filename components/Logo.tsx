@@ -1,46 +1,46 @@
+import Image from "next/image";
+
 const SIZES = {
-  sm: { icon: 16, text: "text-lg", gap: "gap-1.5" },
-  md: { icon: 22, text: "text-3xl", gap: "gap-2" },
-  lg: { icon: 32, text: "text-5xl", gap: "gap-2.5" },
+  sm: { icon: 20, textWidth: 70 },
+  md: { icon: 28, textWidth: 96 },
+  lg: { icon: 40, textWidth: 140 },
 } as const;
 
-// Logo de Ryvo — icono (chevron ascendente) + wordmark en Bebas Neue,
-// una fuente condensada propia del logo, distinta de la que usa el
-// resto de la interfaz (font-display) para que la marca destaque como
-// un elemento propio y no se confunda con un título más de pantalla.
-//
-// El wrapper es "flex" (no "inline-flex") a propósito: así, cuando el
-// que lo usa le pasa "justify-center", el centrado funciona de verdad
-// (un inline-flex se comporta como texto en línea y ignora su propio
-// justify-content al posicionarse dentro del padre).
+// Logo de Ryvo — icono + wordmark reales (public/brand/), ya no
+// dibujados a mano. El wordmark tiene dos variantes de color porque el
+// archivo original es un contorno claro pensado para fondo oscuro:
+// "dark" (texto oscuro) para las pantallas de fondo claro, que son casi
+// todas ahora; "light" (el original) solo para el hero oscuro de la
+// landing.
 export default function Logo({
   size = "md",
   tone = "light",
   className = "",
 }: {
   size?: keyof typeof SIZES;
-  tone?: "light" | "dark"; // "dark" = se usa sobre un fondo oscuro (ej. el hero de la landing)
+  tone?: "light" | "dark"; // "dark" = fondo oscuro detrás del logo (ej. el hero de la landing)
   className?: string;
 }) {
   const s = SIZES[size];
+  const textSrc =
+    tone === "dark" ? "/brand/ryvo-text-light.png" : "/brand/ryvo-text-dark.png";
+
   return (
-    <div className={`flex items-center ${s.gap} ${className}`}>
-      <svg width={s.icon} height={s.icon} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-        <polyline
-          points="6,23 16,7 26,23"
-          stroke="currentColor"
-          strokeWidth="4.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={tone === "dark" ? "text-podium-track" : "text-podium-track-dark"}
-        />
-      </svg>
-      <span
-        className={`font-logo uppercase tracking-wide leading-none ${s.text}`}
-        style={{ fontFamily: "var(--font-logo)" }}
-      >
-        Ryvo
-      </span>
+    <div className={`flex items-center gap-2 ${className}`}>
+      <Image
+        src="/brand/ryvo-logo.png"
+        alt=""
+        width={s.icon}
+        height={s.icon}
+        priority
+      />
+      <Image
+        src={textSrc}
+        alt="Ryvo"
+        width={s.textWidth}
+        height={Math.round((s.textWidth * 72) / 380)}
+        priority
+      />
     </div>
   );
 }

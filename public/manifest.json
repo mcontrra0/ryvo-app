@@ -6,5 +6,11 @@
   "display": "standalone",
   "background_color": "#fbfaf6",
   "theme_color": "#8fd400",
-  "icons": []
+  "icons": [
+    {
+      "src": "/brand/ryvo-logo.png",
+      "sizes": "165x165",
+      "type": "image/png"
+    }
+  ]
 }
