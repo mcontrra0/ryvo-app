@@ -117,7 +117,7 @@ function CheckinContent() {
     const xp = baseXp + offpeakBonus;
 
     await closeCheckin(open.id, minutes, valid, xp);
-    if (valid) await awardXp(open.memberId, xp, gymSlug);
+    if (valid) await awardXp(open.memberId, xp);
 
     setTapOutResult({
       minutes,

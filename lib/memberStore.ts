@@ -1,9 +1,8 @@
 "use client";
 
-import { Member, MuscleGroupId, getWeekIndex } from "./types";
+import { Member, MuscleGroupId, getWeekIndex, DEFAULT_WEEKLY_GOAL_DAYS } from "./types";
 import { supabase } from "./supabase";
 import { getGymBySlug } from "./gymStore";
-import { getMinSessionsPerWeek } from "./streakStore";
 
 // ============================================================
 // Capa de datos real sobre Supabase. Sustituye a la versión anterior
@@ -44,6 +43,8 @@ interface MemberRow {
   current_week_index: number | null;
   current_week_sessions: number;
   racha_semanas: number;
+  weekly_goal_days: number;
+  streak_freezes: number;
   cashback_month_key: string | null;
   session_days_this_month: string[] | null;
   last_comodin_claim: string | null;
@@ -68,6 +69,8 @@ function rowToMember(row: MemberRow, activity?: ActivityRow): Member {
     sesiones14a28DiasAtras: activity?.sesiones_14_28_dias_atras ?? 0,
     xpTotal: row.xp_total,
     racha: row.racha_semanas,
+    weeklyGoalDays: row.weekly_goal_days ?? DEFAULT_WEEKLY_GOAL_DAYS,
+    streakFreezes: row.streak_freezes ?? 0,
     anomaliasGps: row.anomalias_gps,
     sessionDaysThisMonth: row.session_days_this_month ?? [],
     cashbackMonthKey: row.cashback_month_key,
@@ -192,36 +195,51 @@ export async function loginWithPhonePin(
   return rowToMember(data as MemberRow);
 }
 
-// ---------- Racha semanal + cashback (misma lógica que antes) ----------
+// ---------- Racha semanal (objetivo PERSONAL, no del gimnasio) + cashback ----------
 
 function computeWeeklyUpdate(
   current: Member,
-  weekIdx: number,
-  minSessions: number
-): { currentWeekIndex: number; currentWeekSessions: number; racha: number } {
+  weekIdx: number
+): {
+  currentWeekIndex: number;
+  currentWeekSessions: number;
+  racha: number;
+  freezeConsumed: boolean;
+} {
+  const goal = current.weeklyGoalDays;
+
   if (current.currentWeekIndex === weekIdx) {
     return {
       currentWeekIndex: weekIdx,
       currentWeekSessions: current.currentWeekSessions + 1,
       racha: current.racha,
+      freezeConsumed: false,
     };
   }
 
   const previousWeekMetGoal =
-    current.currentWeekIndex !== null && current.currentWeekSessions >= minSessions;
+    current.currentWeekIndex !== null && current.currentWeekSessions >= goal;
   const isConsecutiveWeek =
     current.currentWeekIndex !== null && weekIdx === current.currentWeekIndex + 1;
 
   let racha: number;
+  let freezeConsumed = false;
+
   if (previousWeekMetGoal && isConsecutiveWeek) {
     racha = current.racha + 1;
   } else if (previousWeekMetGoal) {
-    racha = 1;
+    racha = 1; // cumplió, pero hubo un hueco de por medio — empieza de nuevo
+  } else if (isConsecutiveWeek && current.racha > 0 && current.streakFreezes > 0) {
+    // No llegó al objetivo, pero tiene un congelador y hay una racha
+    // activa que proteger — el congelador "cuenta" esa semana como
+    // cumplida, igual que en Duolingo.
+    racha = current.racha + 1;
+    freezeConsumed = true;
   } else {
-    racha = 0;
+    racha = 0; // sin congelador disponible, la racha se corta
   }
 
-  return { currentWeekIndex: weekIdx, currentWeekSessions: 1, racha };
+  return { currentWeekIndex: weekIdx, currentWeekSessions: 1, racha, freezeConsumed };
 }
 
 function computeUpdatedCashbackDays(
@@ -235,15 +253,14 @@ function computeUpdatedCashbackDays(
 }
 
 // XP por sesión general validada (fichaje de entrada + salida, 45+ min)
-export async function awardXp(memberId: string, xp: number, gymSlug: string) {
+export async function awardXp(memberId: string, xp: number) {
   if (!supabase) return;
   const current = await getMemberById(memberId);
   if (!current) return;
 
   const today = todayKey();
   const { days, monthKey: mKey } = computeUpdatedCashbackDays(current, today);
-  const minSessions = await getMinSessionsPerWeek(gymSlug);
-  const weekly = computeWeeklyUpdate(current, getWeekIndex(new Date()), minSessions);
+  const weekly = computeWeeklyUpdate(current, getWeekIndex(new Date()));
 
   const { error } = await supabase
     .from("members")
@@ -254,6 +271,7 @@ export async function awardXp(memberId: string, xp: number, gymSlug: string) {
       current_week_index: weekly.currentWeekIndex,
       current_week_sessions: weekly.currentWeekSessions,
       racha_semanas: weekly.racha,
+      streak_freezes: current.streakFreezes - (weekly.freezeConsumed ? 1 : 0),
       session_days_this_month: days,
       cashback_month_key: mKey,
     })
@@ -433,4 +451,63 @@ export async function getRanking(gymSlug: string): Promise<Member[]> {
 export async function getRankPosition(memberId: string, gymSlug: string): Promise<number> {
   const ranking = await getRanking(gymSlug);
   return ranking.findIndex((m) => m.id === memberId) + 1;
+}
+
+// ---------- Objetivo personal de racha + congelador ----------
+
+export async function updateWeeklyGoal(memberId: string, days: number) {
+  if (!supabase) return;
+  const { error } = await supabase
+    .from("members")
+    .update({ weekly_goal_days: days })
+    .eq("id", memberId);
+  if (error) console.error("No se pudo actualizar el objetivo semanal:", error);
+}
+
+// Compra un congelador de racha gastando XP. No usa setOverride/caché
+// porque siempre parte del dato más fresco posible.
+export async function buyStreakFreeze(
+  memberId: string,
+  costXp: number
+): Promise<{ success: boolean; error?: string }> {
+  if (!supabase) return { success: false, error: "Supabase no está configurado" };
+
+  const current = await getMemberById(memberId);
+  if (!current) return { success: false, error: "Socio no encontrado" };
+  if (current.xpTotal < costXp) {
+    return { success: false, error: "No tienes suficiente XP todavía" };
+  }
+
+  const { error } = await supabase
+    .from("members")
+    .update({
+      xp_total: current.xpTotal - costXp,
+      streak_freezes: current.streakFreezes + 1,
+    })
+    .eq("id", memberId);
+
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}
+
+// ---------- Calendario de actividad (para el calendario de /mi-ranking) ----------
+
+export async function getMemberCheckinDays(memberId: string, days = 84): Promise<string[]> {
+  if (!supabase) return [];
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data, error } = await supabase
+    .from("checkins")
+    .select("started_at")
+    .eq("member_id", memberId)
+    .eq("is_valid", true)
+    .gte("started_at", since);
+
+  if (error || !data) return [];
+
+  const uniqueDays = new Set<string>();
+  for (const row of data as { started_at: string }[]) {
+    uniqueDays.add(new Date(row.started_at).toISOString().slice(0, 10));
+  }
+  return [...uniqueDays];
 }

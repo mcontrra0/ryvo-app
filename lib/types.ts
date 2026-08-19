@@ -20,8 +20,19 @@ export const REWARDS: Reward[] = [
 // Racha semanal — no diaria. Exigir venir todos los días sin fallar uno
 // castiga a cualquiera que entrene 3-4 veces por semana, que es lo
 // normal. En vez de eso, la racha cuenta SEMANAS consecutivas en las
-// que se cumple un mínimo de sesiones.
-export const MIN_SESSIONS_PER_WEEK = 2;
+// que se cumple un mínimo de sesiones — y ese mínimo lo elige CADA
+// SOCIO para sí mismo (como el objetivo diario de Duolingo), no el
+// gimnasio. Este valor es solo el que se usa por defecto al registrarse.
+export const DEFAULT_WEEKLY_GOAL_DAYS = 2;
+export const WEEKLY_GOAL_OPTIONS = [1, 2, 3, 4, 5, 6] as const;
+
+// Coste en XP de un "congelador de racha" — protege una semana en la
+// que no llegues a tu objetivo (vacaciones, lesión, lo que sea) sin
+// perder la racha acumulada.
+export const STREAK_FREEZE_COST_XP = 250;
+
+// Umbrales de sesiones totales para los logros personales de /mi-ranking
+export const SESSION_MILESTONES = [10, 25, 50, 100, 200] as const;
 
 // Índice de semana simple (no es un cálculo ISO 8601 real, solo un
 // contador consistente de "semanas desde una fecha ancla fija") — vale
@@ -44,7 +55,9 @@ export interface Member {
   sesionesUltimos14Dias: number;
   sesiones14a28DiasAtras: number;
   xpTotal: number;
-  racha: number; // semanas consecutivas CONFIRMADAS cumpliendo MIN_SESSIONS_PER_WEEK
+  racha: number; // semanas consecutivas CONFIRMADAS cumpliendo el objetivo personal
+  weeklyGoalDays: number; // objetivo semanal DEL SOCIO, no del gimnasio
+  streakFreezes: number; // congeladores de racha disponibles
   anomaliasGps: number; // fichajes marcados como "lejos del gym" — solo aviso, no bloqueo
   sessionDaysThisMonth: string[]; // fechas únicas (YYYY-MM-DD) del mes en curso, para el cashback
   cashbackMonthKey: string | null; // "YYYY-MM" del mes que se está contando
@@ -77,18 +90,6 @@ export const MUSCLE_GROUPS = [
   { id: "espalda_biceps", label: "Espalda/Bíceps", emoji: "💪" },
 ] as const;
 export type MuscleGroupId = (typeof MUSCLE_GROUPS)[number]["id"];
-
-export interface Checkin {
-  id: string;
-  memberId: string;
-  memberName: string;
-  startedAt: string;
-  endedAt: string | null;
-  durationMinutes: number | null;
-  isValid: boolean | null;
-  xpAwarded: number;
-  flaggedAnomaly: boolean;
-}
 
 export function computeRisk(m: Member): RiskLevel {
   if (!m.ultimaSesion) return "riesgo";

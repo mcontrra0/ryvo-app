@@ -2,7 +2,7 @@
 
 import { getGymBySlug, updateGymSettings } from "./gymStore";
 
-// Mismo patrón que cashbackStore.ts y streakStore.ts: la regla de
+// Mismo patrón que cashbackStore.ts: la regla de
 // horas valle vive como columnas en la fila del propio gimnasio.
 
 export interface OffpeakRule {

@@ -7,7 +7,6 @@ import { Reward, CashbackRule, DEFAULT_CASHBACK_RULE, Member } from "@/lib/types
 import { getRewardsForGym } from "@/lib/rewardsStore";
 import { getCashbackRuleForGym } from "@/lib/cashbackStore";
 import { getOffpeakRuleForGym, DEFAULT_OFFPEAK_RULE, OffpeakRule } from "@/lib/offpeakStore";
-import { getMinSessionsPerWeek } from "@/lib/streakStore";
 import {
   getDeviceMember,
   getRanking,
@@ -16,6 +15,7 @@ import {
   loginWithPhonePin,
 } from "@/lib/memberStore";
 import Logo from "@/components/Logo";
+import StreakCard from "@/components/StreakCard";
 
 function DeviceLoginForm({ onSuccess }: { onSuccess: (m: Member) => void }) {
   const [phone, setPhone] = useState("");
@@ -85,7 +85,6 @@ function MiRankingInner() {
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [cashback, setCashback] = useState<CashbackRule>(DEFAULT_CASHBACK_RULE);
   const [offpeak, setOffpeak] = useState<OffpeakRule>(DEFAULT_OFFPEAK_RULE);
-  const [minSessions, setMinSessions] = useState<number>(2);
   const [claimEligible, setClaimEligible] = useState(false);
   const [claimMsg, setClaimMsg] = useState<string | null>(null);
 
@@ -97,7 +96,6 @@ function MiRankingInner() {
       setRewards(await getRewardsForGym(GYM_ID));
       setCashback(await getCashbackRuleForGym(GYM_ID));
       setOffpeak(await getOffpeakRuleForGym(GYM_ID));
-      setMinSessions(await getMinSessionsPerWeek(GYM_ID));
       if (m) setClaimEligible((await getPendingClaim(m.id)).eligible);
     })();
   }, []);
@@ -209,18 +207,7 @@ function MiRankingInner() {
                 XP total
               </p>
             </div>
-            <div>
-              <p className="font-display text-3xl tabular">{me.racha}</p>
-              <p className="font-mono text-[10px] uppercase tracking-widest text-podium-asphalt/50">
-                Racha (semanas)
-              </p>
-            </div>
           </div>
-
-          <p className="font-mono text-[11px] text-podium-asphalt/50 mb-5">
-            Esta semana: {me.currentWeekSessions}/{minSessions} sesiones
-            {me.currentWeekSessions >= minSessions ? " ✓ racha asegurada" : ""}
-          </p>
 
           {nextReward && (
             <div>
@@ -239,6 +226,8 @@ function MiRankingInner() {
             </div>
           )}
         </div>
+
+        <StreakCard member={me} onMemberUpdate={setMe} />
 
         {/* Cashback — alternativa para quien prefiere ahorro directo a premios */}
         {cashback.enabled && (

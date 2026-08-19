@@ -5,13 +5,11 @@ import { CashbackRule, Reward } from "@/lib/types";
 import { GYM_ID } from "@/lib/mockData";
 import { getRewardsForGym, saveRewardsForGym, newBlankReward } from "@/lib/rewardsStore";
 import { getCashbackRuleForGym, saveCashbackRuleForGym } from "@/lib/cashbackStore";
-import { getMinSessionsPerWeek, saveMinSessionsPerWeek } from "@/lib/streakStore";
 import { getOffpeakRuleForGym, saveOffpeakRuleForGym, OffpeakRule } from "@/lib/offpeakStore";
 
 export default function RewardsEditor() {
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [cashback, setCashback] = useState<CashbackRule | null>(null);
-  const [minSessions, setMinSessions] = useState<number>(2);
   const [offpeak, setOffpeak] = useState<OffpeakRule | null>(null);
   const [savedMsg, setSavedMsg] = useState(false);
 
@@ -19,7 +17,6 @@ export default function RewardsEditor() {
     (async () => {
       setRewards(await getRewardsForGym(GYM_ID));
       setCashback(await getCashbackRuleForGym(GYM_ID));
-      setMinSessions(await getMinSessionsPerWeek(GYM_ID));
       setOffpeak(await getOffpeakRuleForGym(GYM_ID));
     })();
   }, []);
@@ -58,7 +55,6 @@ export default function RewardsEditor() {
     setRewards(await getRewardsForGym(GYM_ID)); // recarga ya ordenado por XP
 
     if (cashback) await saveCashbackRuleForGym(GYM_ID, cashback);
-    await saveMinSessionsPerWeek(GYM_ID, minSessions);
     if (offpeak) await saveOffpeakRuleForGym(GYM_ID, offpeak);
 
     setSavedMsg(true);
@@ -117,25 +113,10 @@ export default function RewardsEditor() {
         )}
       </div>
 
-      <div className="rounded-md border border-podium-asphalt/12 bg-white p-4 mb-8">
-        <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50 mb-3">
-          Racha semanal
-        </p>
-        <label className="flex items-center gap-2 text-sm flex-wrap">
-          Un socio mantiene su racha si viene al menos
-          <input
-            type="number"
-            min={1}
-            value={minSessions}
-            onChange={(e) => {
-              setMinSessions(Number(e.target.value) || 1);
-              setSavedMsg(false);
-            }}
-            className="w-16 bg-transparent border border-podium-asphalt/20 rounded-md px-2 py-1.5 text-sm tabular focus:outline-none focus:border-podium-track-dark"
-          />
-          veces por semana
-        </label>
-      </div>
+      <p className="font-mono text-[11px] text-podium-asphalt/40 mb-8">
+        🔥 La racha ahora la define cada socio para sí mismo (como el
+        objetivo de Duolingo) — ya no se configura desde aquí.
+      </p>
 
       <div className="rounded-md border border-podium-asphalt/12 bg-white p-4 mb-8">
         <div className="flex items-center justify-between mb-3">

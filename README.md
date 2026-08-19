@@ -1,6 +1,21 @@
-# Ryvo — MVP (bonus de XP por horas valle)
+# Ryvo — MVP (racha personal, estilo Duolingo)
 
 ## Qué cambió en esta vuelta
+
+- **La racha deja de ser cosa del gimnasio y pasa a ser 100% del
+  socio.** Cada uno elige su propio objetivo semanal (1-6 días,
+  `/mi-ranking`) en vez de que lo fije el CEO — se quitó por completo
+  la sección "Racha semanal" del panel del CEO.
+- **Congelador de racha.** Comprable con XP (250 por defecto, ver
+  `STREAK_FREEZE_COST_XP` en `lib/types.ts`) — protege una semana floja
+  sin perder la racha acumulada, igual que en Duolingo.
+- **Calendario de actividad + logros** en `/mi-ranking` — una
+  cuadrícula de las últimas 8 semanas marcando qué días entrenaste de
+  verdad (datos reales de `checkins`), y una fila de logros por hitos
+  de sesiones totales (10/25/50/100/200).
+- Limpieza de código muerto: `lib/streakStore.ts`, los socios de
+  ejemplo de `lib/mockData.ts` y el tipo `Checkin` sin usar — todos
+  quedaron huérfanos tras la migración a Supabase y ya no hacían nada.
 
 - **Horas valle configurables por gimnasio.** El CEO define un tramo
   horario y un bonus de XP (pestaña Premios → "Horas valle") para
