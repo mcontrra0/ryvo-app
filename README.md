@@ -1,6 +1,15 @@
-# Ryvo — MVP (verificación para la app de Android)
+# Ryvo — MVP (una sesión válida al día por socio)
 
 ## Qué cambió en esta vuelta
+
+- **Arreglado: se podían fichar varias sesiones válidas el mismo día.**
+  Un socio que ya tuviera una sesión validada hoy podía volver a tocar
+  el NFC y abrir otra sesión nueva, acumulando XP de más. Ahora, si ya
+  hay una sesión válida hoy (`hasValidSessionToday`, en
+  `lib/memberStore.ts`, basado en `ultimaSesion` — sin consultas
+  extra), el tap de entrada muestra "Ya has fichado hoy" en vez de
+  arrancar una sesión nueva. Cerrar una sesión ya abierta sigue
+  funcionando igual, esto solo bloquea *empezar* una segunda.
 
 - **`/.well-known/assetlinks.json`** — archivo de verificación de
   Digital Asset Links para la app de Android (TWA, generada con

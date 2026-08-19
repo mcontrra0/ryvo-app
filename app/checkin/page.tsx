@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { GYM_NAME } from "@/lib/mockData";
-import { GYM_COORDS, GPS_WARN_METERS, MUSCLE_GROUPS, MuscleGroupId } from "@/lib/types";
+import { GYM_COORDS, GPS_WARN_METERS, MUSCLE_GROUPS, MuscleGroupId, Member } from "@/lib/types";
 import {
   getDeviceMember,
   registerMember,
@@ -16,6 +16,7 @@ import {
   checkAndHandleAbandonedCheckin,
   recordGpsAnomaly,
   recordMuscleGroup,
+  hasValidSessionToday,
   MIN_MINUTES,
 } from "@/lib/memberStore";
 import RegisterForm from "@/components/RegisterForm";
@@ -41,7 +42,7 @@ import { getOffpeakRuleForGym, isWithinOffpeak, OffpeakRule } from "@/lib/offpea
 // al 100%.
 // ============================================================
 
-type Phase = "loading" | "register" | "tap-in-result" | "tap-out-result";
+type Phase = "loading" | "register" | "already-today" | "tap-in-result" | "tap-out-result";
 
 interface TapOutResult {
   minutes: number;
@@ -92,18 +93,25 @@ function CheckinContent() {
   const [muscleGroupSaved, setMuscleGroupSaved] = useState<MuscleGroupId | null>(null);
   const [offpeak, setOffpeak] = useState<OffpeakRule | null>(null);
 
-  async function processGeneralTap(memberId: string, name: string) {
-    await checkAndHandleAbandonedCheckin(memberId); // por si la sesión abierta era de hace horas
+  async function processGeneralTap(member: Member) {
+    await checkAndHandleAbandonedCheckin(member.id); // por si la sesión abierta era de hace horas
 
-    const open = await getOpenCheckin(memberId);
+    const open = await getOpenCheckin(member.id);
     const offpeakRule = offpeak ?? (await getOffpeakRuleForGym(gymSlug));
     if (!offpeak) setOffpeak(offpeakRule);
 
     if (!open) {
+      // Ya has fichado (y validado) hoy — no se abre una sesión nueva
+      if (hasValidSessionToday(member)) {
+        setMemberName(member.fullName);
+        setPhase("already-today");
+        return;
+      }
+
       // TAP 1 — entrada
-      await startCheckin(gymSlug, memberId);
-      checkGpsSoftly(memberId);
-      setMemberName(name);
+      await startCheckin(gymSlug, member.id);
+      checkGpsSoftly(member.id);
+      setMemberName(member.fullName);
       setPhase("tap-in-result");
       return;
     }
@@ -137,7 +145,7 @@ function CheckinContent() {
         setPhase("register");
         return;
       }
-      await processGeneralTap(existing.id, existing.fullName);
+      await processGeneralTap(existing);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -145,7 +153,7 @@ function CheckinContent() {
   async function handleRegisterComplete(data: { fullName: string; phone: string; pin: string }) {
     const member = await registerMember(gymSlug, data);
     if (!member) return; // TODO: mostrar error si Supabase no está configurado/falla
-    await processGeneralTap(member.id, member.fullName);
+    await processGeneralTap(member);
   }
 
   async function handleMuscleGroupPick(group: MuscleGroupId) {
@@ -167,6 +175,25 @@ function CheckinContent() {
         )}
 
         {phase === "register" && <RegisterForm onComplete={handleRegisterComplete} />}
+
+        {phase === "already-today" && (
+          <div className="flex flex-col items-center text-center gap-4">
+            <p className="text-3xl">✋</p>
+            <p className="font-display text-2xl uppercase tracking-tight">
+              Ya has fichado hoy, {memberName.split(" ")[0]}
+            </p>
+            <p className="text-podium-asphalt/60 text-sm max-w-xs">
+              Solo se registra una sesión válida al día. ¡Vuelve mañana a
+              seguir sumando XP!
+            </p>
+            <Link
+              href="/mi-ranking"
+              className="mt-4 w-full bg-podium-asphalt text-podium-chalk hover:bg-podium-asphalt/90 transition-colors rounded-md py-4 font-display text-xl uppercase tracking-wide"
+            >
+              Ver mi ranking
+            </Link>
+          </div>
+        )}
 
         {phase === "tap-in-result" && (
           <div className="flex flex-col items-center text-center gap-4">

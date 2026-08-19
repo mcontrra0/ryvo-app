@@ -29,6 +29,15 @@ function todayKey(d = new Date()): string {
   return d.toISOString().slice(0, 10); // YYYY-MM-DD
 }
 
+// Solo se admite una sesión VÁLIDA al día por socio — evita que se
+// pueda fichar entrada/salida varias veces el mismo día para acumular
+// XP de más. Se apoya en `ultimaSesion`, que ya viaja con el socio, así
+// que no hace falta ninguna consulta extra a la base de datos.
+export function hasValidSessionToday(member: Member): boolean {
+  if (!member.ultimaSesion) return false;
+  return todayKey(new Date(member.ultimaSesion)) === todayKey();
+}
+
 function monthKey(d = new Date()): string {
   return d.toISOString().slice(0, 7); // YYYY-MM
 }
