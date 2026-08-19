@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.ryvo.app",
+      "sha256_cert_fingerprints": [
+        "76:DD:82:ED:8D:86:A9:8B:FC:7B:71:66:63:25:AE:1C:D7:57:67:69:BB:75:A7:5F:F9:20:D8:D8:4E:0C:96:63"
+      ]
+    }
+  }
+]

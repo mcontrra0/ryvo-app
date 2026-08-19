@@ -1,6 +1,22 @@
-# Ryvo — MVP (logo real, ya no dibujado a mano)
+# Ryvo — MVP (verificación para la app de Android)
 
 ## Qué cambió en esta vuelta
+
+- **`/.well-known/assetlinks.json`** — archivo de verificación de
+  Digital Asset Links para la app de Android (TWA, generada con
+  Bubblewrap desde Claude Code, proyecto en `android/` dentro del
+  repo). Confirma a Android que la web (`ryvo-app-alpha.vercel.app`) y
+  la app (`com.ryvo.app`) son del mismo dueño — sin esto, la app abre
+  con la barra de navegador de Chrome visible en vez de a pantalla
+  completa.
+  - ⚠️ **Este archivo solo tiene efecto en producción.** La app
+    Android se generó apuntando directamente a la URL de producción,
+    no a la de preview — probarlo en `dev` no verifica nada útil esta
+    vez.
+  - El icono usado para la app (165×165) es más pequeño de lo que
+    recomienda Google Play (512×512 mínimo) — vale para probar, pero
+    habrá que regenerarlo con una versión de mayor resolución antes de
+    publicar en la Play Store de verdad.
 
 - **Logo real integrado.** Sustituidos el icono y el wordmark que
   habíamos dibujado a mano en SVG por los archivos reales
