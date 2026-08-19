@@ -15,8 +15,8 @@ import {
   YAxis,
 } from "recharts";
 import { GYM_NAME, GYM_ID } from "@/lib/mockData";
-import { computeRisk, Member, MUSCLE_GROUPS } from "@/lib/types";
-import { getAllMembers, getRanking, getMuscleTally } from "@/lib/memberStore";
+import { computeRisk, Member } from "@/lib/types";
+import { getAllMembers, getRanking } from "@/lib/memberStore";
 import { getGymAnalytics, indexMonthlyStats, GymAnalytics } from "@/lib/analyticsStore";
 import { logout } from "@/lib/auth";
 import MemberRiskRow from "@/components/MemberRiskRow";
@@ -35,7 +35,6 @@ export default function DashboardPage() {
   const [tab, setTab] = useState<Tab>("resumen");
   const [members, setMembers] = useState<Member[]>([]);
   const [ranking, setRanking] = useState<Member[]>([]);
-  const [muscleTally, setMuscleTally] = useState<Record<string, number>>({});
   const [analytics, setAnalytics] = useState<GymAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -48,29 +47,17 @@ export default function DashboardPage() {
     (async () => {
       setMembers(await getAllMembers(GYM_ID));
       setRanking(await getRanking(GYM_ID));
-      setMuscleTally(await getMuscleTally(GYM_ID));
       setAnalytics(await getGymAnalytics(GYM_ID));
       setLoading(false);
     })();
   }, []);
 
   const totalAnomalies = members.reduce((sum, m) => sum + m.anomaliasGps, 0);
-  const totalMuscleTaps = Object.values(muscleTally).reduce((a, b) => a + b, 0);
 
   const withRisk = members.map((m) => ({ m, risk: computeRisk(m) }));
   const activos = withRisk.filter((x) => x.risk === "activo");
   const descenso = withRisk.filter((x) => x.risk === "descenso");
   const riesgo = withRisk.filter((x) => x.risk === "riesgo");
-
-  // Solo cuenta socios con racha activa (>0) — si la calculásemos
-  // sobre todos, los socios inactivos (racha=0) arrastrarían la media
-  // hacia abajo y el número dejaría de significar nada útil.
-  const membersWithStreak = members.filter((m) => m.racha > 0);
-  const avgRacha = membersWithStreak.length
-    ? Math.round(
-        (membersWithStreak.reduce((sum, m) => sum + m.racha, 0) / membersWithStreak.length) * 10
-      ) / 10
-    : 0;
 
   const sessionsThisWeek = analytics?.sessionsByDay.slice(7, 14).reduce((s, d) => s + d.count, 0) ?? 0;
   const sessionsPrevWeek = analytics?.sessionsByDay.slice(0, 7).reduce((s, d) => s + d.count, 0) ?? 0;
@@ -141,10 +128,9 @@ export default function DashboardPage() {
               Lo esencial de un vistazo — sin entrar en ninguna pestaña más.
             </p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+            <div className="grid grid-cols-3 gap-3 mb-8">
               <KpiCard label="Socios activos" value={activos.length} emoji="🟢" />
               <KpiCard label="En riesgo" value={riesgo.length} emoji="🔴" />
-              <KpiCard label="Racha media (activos)" value={`${avgRacha}`} suffix="sem." emoji="🔥" />
               <KpiCard
                 label="Sesiones/semana"
                 value={sessionsThisWeek}
@@ -381,36 +367,6 @@ export default function DashboardPage() {
             <p className="font-mono text-[10px] text-podium-asphalt/30 mb-8">
               Calculado a partir de tus fichajes reales de los últimos 6 meses.
             </p>
-
-            {totalMuscleTaps > 0 && (
-              <>
-                <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50 mb-4">
-                  Qué entrena la gente (auto-declarado al fichar salida)
-                </p>
-                <div className="flex flex-col gap-2">
-                  {MUSCLE_GROUPS.map((g) => {
-                    const count = muscleTally[g.id] || 0;
-                    const pct = totalMuscleTaps ? Math.round((count / totalMuscleTaps) * 100) : 0;
-                    return (
-                      <div key={g.id} className="flex items-center gap-3">
-                        <span className="w-32 text-sm shrink-0">
-                          {g.emoji} {g.label}
-                        </span>
-                        <div className="flex-1 h-3 rounded-full bg-podium-asphalt/10 overflow-hidden">
-                          <div
-                            className="h-full bg-podium-track rounded-full"
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                        <span className="font-mono text-xs text-podium-asphalt/50 w-10 text-right">
-                          {pct}%
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            )}
           </>
         )}
 

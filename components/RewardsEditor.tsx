@@ -113,11 +113,6 @@ export default function RewardsEditor() {
         )}
       </div>
 
-      <p className="font-mono text-[11px] text-podium-asphalt/40 mb-8">
-        🔥 La racha ahora la define cada socio para sí mismo (como el
-        objetivo de Duolingo) — ya no se configura desde aquí.
-      </p>
-
       <div className="rounded-md border border-podium-asphalt/12 bg-white p-4 mb-8">
         <div className="flex items-center justify-between mb-3">
           <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50">
