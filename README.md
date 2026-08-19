@@ -1,6 +1,15 @@
-# Ryvo — MVP (dashboard del CEO rediseñado, con analítica real)
+# Ryvo — MVP (bonus de XP por horas valle)
 
 ## Qué cambió en esta vuelta
+
+- **Horas valle configurables por gimnasio.** El CEO define un tramo
+  horario y un bonus de XP (pestaña Premios → "Horas valle") para
+  animar a los socios con horario flexible a venir en las horas menos
+  concurridas — usa la propia gráfica de "Horas punta" del Resumen
+  para decidir cuál es su franja floja. El socio ve el aviso en el
+  momento de fichar entrada si está dentro del tramo, y el desglose
+  del bonus al validar la salida. También aparece publicitado como
+  cuarta ventaja en la landing (`/`). Ver `lib/offpeakStore.ts`.
 
 - **Nueva pestaña "Resumen" en `/dashboard`, y es la primera que se ve.**
   Antes había que entrar en una pestaña concreta para saber si algo iba

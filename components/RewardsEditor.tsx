@@ -6,11 +6,13 @@ import { GYM_ID } from "@/lib/mockData";
 import { getRewardsForGym, saveRewardsForGym, newBlankReward } from "@/lib/rewardsStore";
 import { getCashbackRuleForGym, saveCashbackRuleForGym } from "@/lib/cashbackStore";
 import { getMinSessionsPerWeek, saveMinSessionsPerWeek } from "@/lib/streakStore";
+import { getOffpeakRuleForGym, saveOffpeakRuleForGym, OffpeakRule } from "@/lib/offpeakStore";
 
 export default function RewardsEditor() {
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [cashback, setCashback] = useState<CashbackRule | null>(null);
   const [minSessions, setMinSessions] = useState<number>(2);
+  const [offpeak, setOffpeak] = useState<OffpeakRule | null>(null);
   const [savedMsg, setSavedMsg] = useState(false);
 
   useEffect(() => {
@@ -18,8 +20,14 @@ export default function RewardsEditor() {
       setRewards(await getRewardsForGym(GYM_ID));
       setCashback(await getCashbackRuleForGym(GYM_ID));
       setMinSessions(await getMinSessionsPerWeek(GYM_ID));
+      setOffpeak(await getOffpeakRuleForGym(GYM_ID));
     })();
   }, []);
+
+  function updateOffpeak(patch: Partial<OffpeakRule>) {
+    setOffpeak((prev) => (prev ? { ...prev, ...patch } : prev));
+    setSavedMsg(false);
+  }
 
   function updateCashback(patch: Partial<CashbackRule>) {
     setCashback((prev) => (prev ? { ...prev, ...patch } : prev));
@@ -51,6 +59,7 @@ export default function RewardsEditor() {
 
     if (cashback) await saveCashbackRuleForGym(GYM_ID, cashback);
     await saveMinSessionsPerWeek(GYM_ID, minSessions);
+    if (offpeak) await saveOffpeakRuleForGym(GYM_ID, offpeak);
 
     setSavedMsg(true);
   }
@@ -126,6 +135,59 @@ export default function RewardsEditor() {
           />
           veces por semana
         </label>
+      </div>
+
+      <div className="rounded-md border border-podium-asphalt/12 bg-white p-4 mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50">
+            Horas valle
+          </p>
+          <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={offpeak?.enabled ?? false}
+              onChange={(e) => updateOffpeak({ enabled: e.target.checked })}
+            />
+            Activado
+          </label>
+        </div>
+        {offpeak && (
+          <>
+            <label className="flex items-center gap-2 text-sm flex-wrap mb-2">
+              Bonus de
+              <input
+                type="number"
+                min={1}
+                value={offpeak.bonusXp}
+                onChange={(e) => updateOffpeak({ bonusXp: Number(e.target.value) || 0 })}
+                className="w-16 bg-transparent border border-podium-asphalt/20 rounded-md px-2 py-1.5 text-sm tabular focus:outline-none focus:border-podium-track-dark"
+              />
+              XP para quien entrena entre las
+              <input
+                type="number"
+                min={0}
+                max={23}
+                value={offpeak.startHour}
+                onChange={(e) => updateOffpeak({ startHour: Number(e.target.value) || 0 })}
+                className="w-14 bg-transparent border border-podium-asphalt/20 rounded-md px-2 py-1.5 text-sm tabular focus:outline-none focus:border-podium-track-dark"
+              />
+              h y las
+              <input
+                type="number"
+                min={0}
+                max={23}
+                value={offpeak.endHour}
+                onChange={(e) => updateOffpeak({ endHour: Number(e.target.value) || 0 })}
+                className="w-14 bg-transparent border border-podium-asphalt/20 rounded-md px-2 py-1.5 text-sm tabular focus:outline-none focus:border-podium-track-dark"
+              />
+              h
+            </label>
+            <p className="font-mono text-[10px] text-podium-asphalt/40">
+              Útil para llenar las horas muertas — mira la gráfica de "Horas
+              punta" en Resumen para decidir cuáles son las tuyas.
+            </p>
+          </>
+        )}
       </div>
 
       <h3 className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50 mb-3">

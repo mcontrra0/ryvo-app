@@ -20,6 +20,7 @@ import {
 } from "@/lib/memberStore";
 import RegisterForm from "@/components/RegisterForm";
 import Logo from "@/components/Logo";
+import { getOffpeakRuleForGym, isWithinOffpeak, OffpeakRule } from "@/lib/offpeakStore";
 
 // ============================================================
 // Destino real de la URL grabada en el NFC/QR de la entrada. El socio
@@ -46,6 +47,7 @@ interface TapOutResult {
   minutes: number;
   valid: boolean;
   xp: number;
+  offpeakBonus: number;
   rankPosition?: number;
   checkinId: string;
 }
@@ -88,11 +90,14 @@ function CheckinContent() {
   const [memberName, setMemberName] = useState("");
   const [tapOutResult, setTapOutResult] = useState<TapOutResult | null>(null);
   const [muscleGroupSaved, setMuscleGroupSaved] = useState<MuscleGroupId | null>(null);
+  const [offpeak, setOffpeak] = useState<OffpeakRule | null>(null);
 
   async function processGeneralTap(memberId: string, name: string) {
     await checkAndHandleAbandonedCheckin(memberId); // por si la sesión abierta era de hace horas
 
     const open = await getOpenCheckin(memberId);
+    const offpeakRule = offpeak ?? (await getOffpeakRuleForGym(gymSlug));
+    if (!offpeak) setOffpeak(offpeakRule);
 
     if (!open) {
       // TAP 1 — entrada
@@ -106,7 +111,10 @@ function CheckinContent() {
     // TAP 2 — salida
     const minutes = Math.floor((Date.now() - new Date(open.startedAt).getTime()) / 60000);
     const valid = minutes >= MIN_MINUTES;
-    const xp = valid ? 100 + Math.min(minutes - MIN_MINUTES, 30) : 0;
+    const baseXp = valid ? 100 + Math.min(minutes - MIN_MINUTES, 30) : 0;
+    const startHour = new Date(open.startedAt).getHours();
+    const offpeakBonus = valid && isWithinOffpeak(startHour, offpeakRule) ? offpeakRule.bonusXp : 0;
+    const xp = baseXp + offpeakBonus;
 
     await closeCheckin(open.id, minutes, valid, xp);
     if (valid) await awardXp(open.memberId, xp, gymSlug);
@@ -115,6 +123,7 @@ function CheckinContent() {
       minutes,
       valid,
       xp,
+      offpeakBonus,
       checkinId: open.id,
       rankPosition: valid ? await getRankPosition(open.memberId, gymSlug) : undefined,
     });
@@ -172,6 +181,11 @@ function CheckinContent() {
               Vuelve a tocar el NFC al salir para validar la sesión y ganar
               XP. Necesitas al menos {MIN_MINUTES} minutos.
             </p>
+            {offpeak && isWithinOffpeak(new Date().getHours(), offpeak) && (
+              <p className="font-mono text-xs text-podium-mint bg-podium-mint/10 border border-podium-mint/30 rounded-md px-3 py-2">
+                🌤️ Estás en horas valle — +{offpeak.bonusXp} XP extra al validar
+              </p>
+            )}
             <Link
               href="/mi-ranking"
               className="mt-4 font-mono text-xs uppercase tracking-widest text-podium-gold underline"
@@ -194,6 +208,11 @@ function CheckinContent() {
                 <p className="font-display text-6xl tabular text-podium-gold">
                   +{tapOutResult.xp} XP
                 </p>
+                {tapOutResult.offpeakBonus > 0 && (
+                  <p className="font-mono text-xs text-podium-mint">
+                    🌤️ Incluye +{tapOutResult.offpeakBonus} XP por hora valle
+                  </p>
+                )}
                 {tapOutResult.rankPosition && (
                   <p className="text-podium-asphalt/60 text-sm">
                     Ahora estás en el puesto{" "}

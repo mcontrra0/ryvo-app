@@ -6,6 +6,7 @@ import { GYM_NAME, GYM_ID } from "@/lib/mockData";
 import { Reward, CashbackRule, DEFAULT_CASHBACK_RULE, Member } from "@/lib/types";
 import { getRewardsForGym } from "@/lib/rewardsStore";
 import { getCashbackRuleForGym } from "@/lib/cashbackStore";
+import { getOffpeakRuleForGym, DEFAULT_OFFPEAK_RULE, OffpeakRule } from "@/lib/offpeakStore";
 import { getMinSessionsPerWeek } from "@/lib/streakStore";
 import {
   getDeviceMember,
@@ -83,6 +84,7 @@ function MiRankingInner() {
   const [ranking, setRanking] = useState<Member[]>([]);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [cashback, setCashback] = useState<CashbackRule>(DEFAULT_CASHBACK_RULE);
+  const [offpeak, setOffpeak] = useState<OffpeakRule>(DEFAULT_OFFPEAK_RULE);
   const [minSessions, setMinSessions] = useState<number>(2);
   const [claimEligible, setClaimEligible] = useState(false);
   const [claimMsg, setClaimMsg] = useState<string | null>(null);
@@ -94,6 +96,7 @@ function MiRankingInner() {
       setRanking(await getRanking(GYM_ID));
       setRewards(await getRewardsForGym(GYM_ID));
       setCashback(await getCashbackRuleForGym(GYM_ID));
+      setOffpeak(await getOffpeakRuleForGym(GYM_ID));
       setMinSessions(await getMinSessionsPerWeek(GYM_ID));
       if (m) setClaimEligible((await getPendingClaim(m.id)).eligible);
     })();
@@ -271,6 +274,21 @@ function MiRankingInner() {
             </>
           )}
         </div>
+        )}
+
+        {/* Horas valle — para que el socio sepa cuándo aprovechar el bonus */}
+        {offpeak.enabled && (
+          <div className="rounded-lg border border-podium-gold/30 bg-podium-gold/5 p-5 mb-8">
+            <p className="font-mono text-[11px] uppercase tracking-widest text-podium-gold mb-2">
+              🌤️ Horas valle
+            </p>
+            <p className="text-sm text-podium-asphalt/70">
+              Entrena entre las <span className="font-semibold text-podium-asphalt">{offpeak.startHour}h</span> y las{" "}
+              <span className="font-semibold text-podium-asphalt">{offpeak.endHour}h</span> y ganas{" "}
+              <span className="font-semibold text-podium-asphalt">+{offpeak.bonusXp} XP extra</span> por sesión —
+              perfecto si tienes horario flexible.
+            </p>
+          </div>
         )}
 
         {/* Escalera de premios */}

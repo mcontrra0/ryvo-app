@@ -90,6 +90,11 @@ export default function LandingPage() {
               title="Cada sesión suma XP hacia un premio real"
               desc="Batidos, descuentos, meses gratis — tú decides el premio. El socio ve su progreso en el móvil, y el ranking del gimnasio salta en la pantalla de la sala."
             />
+            <FeatureRow
+              tag="04 · Horas valle"
+              title="Llena las horas muertas, no solo las punta"
+              desc="Tú decides el tramo horario y el bonus de XP. Los socios con horario flexible tienen un motivo real para venir cuando tu gimnasio está más vacío, no solo a las 19h como todos."
+            />
           </div>
         </div>
       </section>

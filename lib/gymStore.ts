@@ -19,6 +19,10 @@ export interface GymRecord {
   cashback_min_days_per_month: number;
   cashback_discount_euros: number;
   rewards_customized: boolean;
+  offpeak_enabled: boolean;
+  offpeak_start_hour: number;
+  offpeak_end_hour: number;
+  offpeak_bonus_xp: number;
 }
 
 const cache = new Map<string, GymRecord>();
