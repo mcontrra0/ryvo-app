@@ -9,26 +9,40 @@ import {
 } from "@/lib/types";
 import { updateWeeklyGoal, buyStreakFreeze, getMemberCheckinDays } from "@/lib/memberStore";
 
-const CALENDAR_WEEKS = 8;
+const CALENDAR_WEEKS = 6;
+const WEEKDAY_LABELS = ["L", "M", "X", "J", "V", "S", "D"];
 
-function buildCalendarDays(): { date: string; label: string }[] {
-  const days: { date: string; label: string }[] = [];
+interface CalendarDay {
+  date: string; // YYYY-MM-DD
+  dayNumber: number;
+  inCurrentMonth: boolean;
+}
+
+// Calendario real: semanas como filas, lunes a domingo como columnas —
+// igual que cualquier calendario de verdad (o Strava), no una
+// cuadrícula genérica de casillas sin más.
+function buildCalendarWeeks(): CalendarDay[][] {
   const today = new Date();
-  // Retrocede hasta el lunes de hace (CALENDAR_WEEKS-1) semanas, para
-  // que la cuadrícula empiece siempre en lunes.
+  const currentMonth = today.getMonth();
   const dow = (today.getDay() + 6) % 7; // 0=lunes ... 6=domingo
   const start = new Date(today);
   start.setDate(today.getDate() - dow - (CALENDAR_WEEKS - 1) * 7);
 
-  for (let i = 0; i < CALENDAR_WEEKS * 7; i++) {
-    const d = new Date(start);
-    d.setDate(start.getDate() + i);
-    days.push({
-      date: d.toISOString().slice(0, 10),
-      label: d.toLocaleDateString("es-ES", { day: "numeric", month: "short" }),
-    });
+  const weeks: CalendarDay[][] = [];
+  for (let w = 0; w < CALENDAR_WEEKS; w++) {
+    const week: CalendarDay[] = [];
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(start);
+      date.setDate(start.getDate() + w * 7 + d);
+      week.push({
+        date: date.toISOString().slice(0, 10),
+        dayNumber: date.getDate(),
+        inCurrentMonth: date.getMonth() === currentMonth,
+      });
+    }
+    weeks.push(week);
   }
-  return days;
+  return weeks;
 }
 
 export default function StreakCard({
@@ -71,8 +85,10 @@ export default function StreakCard({
     }
   }
 
-  const calendarDays = buildCalendarDays();
+  const calendarWeeks = buildCalendarWeeks();
+  const todayStr = new Date().toISOString().slice(0, 10);
   const goalMet = member.currentWeekSessions >= member.weeklyGoalDays;
+  const monthLabel = new Date().toLocaleDateString("es-ES", { month: "long", year: "numeric" });
 
   return (
     <div className="rounded-lg border border-podium-gold/30 bg-podium-gold/5 p-5 mb-8">
@@ -130,37 +146,49 @@ export default function StreakCard({
       </div>
       {buyMsg && <p className="font-mono text-[10px] text-podium-asphalt/50 mb-4">{buyMsg}</p>}
 
-      {/* Calendario de actividad */}
-      <p className="font-mono text-[10px] uppercase tracking-widest text-podium-asphalt/50 mb-2">
-        Últimas {CALENDAR_WEEKS} semanas
+      {/* Calendario real de actividad, estilo Strava */}
+      <p className="font-mono text-[10px] uppercase tracking-widest text-podium-asphalt/50 mb-2 capitalize">
+        {monthLabel}
       </p>
-      <div
-        className="grid gap-1 mb-1"
-        style={{ gridTemplateColumns: `repeat(${CALENDAR_WEEKS}, 1fr)` }}
-      >
-        {Array.from({ length: 7 }, (_, dayOfWeek) =>
-          Array.from({ length: CALENDAR_WEEKS }, (_, week) => {
-            const day = calendarDays[week * 7 + dayOfWeek];
-            const trained = checkinDays.has(day.date);
-            const isToday = day.date === new Date().toISOString().slice(0, 10);
-            return (
-              <div
-                key={day.date}
-                title={day.label}
-                className={`aspect-square rounded-sm ${
-                  trained
-                    ? "bg-podium-gold"
-                    : isToday
-                    ? "border border-podium-gold/60"
-                    : "bg-podium-asphalt/8"
-                }`}
-              />
-            );
-          })
-        ).flat()}
+
+      <div className="grid grid-cols-7 gap-1 mb-1">
+        {WEEKDAY_LABELS.map((label) => (
+          <div
+            key={label}
+            className="text-center font-mono text-[9px] uppercase text-podium-asphalt/40"
+          >
+            {label}
+          </div>
+        ))}
       </div>
-      <p className="font-mono text-[10px] text-podium-asphalt/40">
-        Cada casilla es un día — dorado si entrenaste.
+
+      <div className="flex flex-col gap-1">
+        {calendarWeeks.map((week) => (
+          <div key={week[0].date} className="grid grid-cols-7 gap-1">
+            {week.map((day) => {
+              const trained = checkinDays.has(day.date);
+              const isToday = day.date === todayStr;
+              return (
+                <div
+                  key={day.date}
+                  title={day.date}
+                  className={`aspect-square rounded-md flex items-center justify-center text-[11px] font-mono ${
+                    trained
+                      ? "bg-podium-gold/20"
+                      : "bg-podium-asphalt/5"
+                  } ${isToday ? "ring-2 ring-podium-gold" : ""} ${
+                    day.inCurrentMonth ? "text-podium-asphalt/70" : "text-podium-asphalt/25"
+                  }`}
+                >
+                  {trained ? <span className="text-sm">🔥</span> : day.dayNumber}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+      <p className="font-mono text-[10px] text-podium-asphalt/40 mt-2">
+        🔥 = día con sesión válida registrada
       </p>
 
       {/* Logros personales */}

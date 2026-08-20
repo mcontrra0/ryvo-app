@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { GYM_NAME } from "@/lib/mockData";
-import { GYM_COORDS, GPS_WARN_METERS, MUSCLE_GROUPS, MuscleGroupId, Member } from "@/lib/types";
+import { GYM_COORDS, GPS_WARN_METERS, Member } from "@/lib/types";
 import {
   getDeviceMember,
   registerMember,
@@ -15,7 +15,6 @@ import {
   closeCheckin,
   checkAndHandleAbandonedCheckin,
   recordGpsAnomaly,
-  recordMuscleGroup,
   hasValidSessionToday,
   MIN_MINUTES,
 } from "@/lib/memberStore";
@@ -90,7 +89,6 @@ function CheckinContent() {
   const [phase, setPhase] = useState<Phase>("loading");
   const [memberName, setMemberName] = useState("");
   const [tapOutResult, setTapOutResult] = useState<TapOutResult | null>(null);
-  const [muscleGroupSaved, setMuscleGroupSaved] = useState<MuscleGroupId | null>(null);
   const [offpeak, setOffpeak] = useState<OffpeakRule | null>(null);
 
   async function processGeneralTap(member: Member) {
@@ -154,12 +152,6 @@ function CheckinContent() {
     const member = await registerMember(gymSlug, data);
     if (!member) return; // TODO: mostrar error si Supabase no está configurado/falla
     await processGeneralTap(member);
-  }
-
-  async function handleMuscleGroupPick(group: MuscleGroupId) {
-    if (!tapOutResult) return;
-    await recordMuscleGroup(tapOutResult.checkinId, group);
-    setMuscleGroupSaved(group);
   }
 
   return (
@@ -248,29 +240,6 @@ function CheckinContent() {
                     </span>{" "}
                     del gimnasio
                   </p>
-                )}
-
-                {/* Selector rápido opcional — 3 segundos, sin bloquear nada */}
-                {!muscleGroupSaved ? (
-                  <div className="w-full mt-4 pt-4 border-t border-podium-asphalt/10">
-                    <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50 mb-3">
-                      ¿Qué has entrenado hoy? (opcional)
-                    </p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {MUSCLE_GROUPS.map((g) => (
-                        <button
-                          key={g.id}
-                          onClick={() => handleMuscleGroupPick(g.id)}
-                          className="flex items-center justify-center gap-2 rounded-md border border-podium-asphalt/15 py-3 hover:border-podium-gold hover:bg-podium-gold/10 transition-colors"
-                        >
-                          <span>{g.emoji}</span>
-                          <span className="font-mono text-xs uppercase">{g.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <p className="font-mono text-xs text-podium-mint">✓ Registrado, gracias</p>
                 )}
 
                 <Link

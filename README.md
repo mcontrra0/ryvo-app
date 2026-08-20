@@ -1,6 +1,26 @@
-# Ryvo — MVP (una sesión válida al día por socio)
+# Ryvo — MVP (icono corregido, calendario real, sin grupo muscular)
 
 ## Qué cambió en esta vuelta
+
+- **Icono con fondo sólido.** El PNG del logo era transparente, así que
+  tanto la app de Android como el splash de la PWA lo componían sobre
+  blanco por defecto — se veía roto. Ahora hay una versión con fondo
+  asphalt sólido horneado en el propio PNG (`public/brand/ryvo-icon-solid.png`),
+  usada en el favicon y en el manifest (icono + `background_color` del
+  splash, ahora oscuro). ⚠️ **La app de Android ya estaba compilada con
+  el icono viejo** — hay que decirle a Claude Code que regenere los
+  iconos de `android/` desde el manifest actualizado y vuelva a
+  compilar con `bubblewrap build` para que se refleje ahí también.
+- **Fuera el sistema de "qué has entrenado hoy".** Quitado por completo
+  (selector en el fichaje, `recordMuscleGroup`, `getMuscleTally`,
+  `MUSCLE_GROUPS` en `lib/types.ts`) — le daremos otro enfoque más
+  adelante. La columna `muscle_group` se queda en la tabla `checkins`
+  sin usarse, no hacía falta tocar el esquema para esto.
+- **Calendario real en `/mi-ranking`**, estilo Strava — semanas como
+  filas, días de la semana como columnas con su cabecera (L M X J V S
+  D), número de día en cada casilla, y 🔥 en los días con sesión válida
+  registrada. Antes era una cuadrícula genérica sin alinear a
+  calendario de verdad.
 
 - **Arreglado: se podían fichar varias sesiones válidas el mismo día.**
   Un socio que ya tuviera una sesión validada hoy podía volver a tocar

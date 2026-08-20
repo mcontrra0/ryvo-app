@@ -1,6 +1,6 @@
 "use client";
 
-import { Member, MuscleGroupId, getWeekIndex, DEFAULT_WEEKLY_GOAL_DAYS } from "./types";
+import { Member, getWeekIndex, DEFAULT_WEEKLY_GOAL_DAYS } from "./types";
 import { supabase } from "./supabase";
 import { getGymBySlug } from "./gymStore";
 
@@ -420,34 +420,6 @@ export async function recordGpsAnomaly(memberId: string) {
   const current = await getMemberById(memberId);
   if (!current) return;
   await supabase.from("members").update({ anomalias_gps: current.anomaliasGps + 1 }).eq("id", memberId);
-}
-
-// ---------- Grupo muscular (se guarda en el propio fichaje) ----------
-
-export async function recordMuscleGroup(checkinId: string, group: MuscleGroupId) {
-  if (!supabase) return;
-  const { error } = await supabase.from("checkins").update({ muscle_group: group }).eq("id", checkinId);
-  if (error) console.error("No se pudo guardar el grupo muscular:", error);
-}
-
-export async function getMuscleTally(gymSlug: string): Promise<Record<string, number>> {
-  if (!supabase) return {};
-  const gym = await getGymBySlug(gymSlug);
-  if (!gym) return {};
-
-  const { data, error } = await supabase
-    .from("checkins")
-    .select("muscle_group")
-    .eq("gym_id", gym.id)
-    .not("muscle_group", "is", null);
-
-  if (error || !data) return {};
-
-  const tally: Record<string, number> = {};
-  for (const row of data as { muscle_group: string }[]) {
-    tally[row.muscle_group] = (tally[row.muscle_group] || 0) + 1;
-  }
-  return tally;
 }
 
 // ---------- Ranking ----------

@@ -83,14 +83,6 @@ export const DEFAULT_CASHBACK_RULE: CashbackRule = {
   discountEuros: 5,
 };
 
-export const MUSCLE_GROUPS = [
-  { id: "pecho_triceps", label: "Pecho/Tríceps", emoji: "🏋️" },
-  { id: "pierna", label: "Pierna", emoji: "🦵" },
-  { id: "cardio", label: "Cardio", emoji: "🏃" },
-  { id: "espalda_biceps", label: "Espalda/Bíceps", emoji: "💪" },
-] as const;
-export type MuscleGroupId = (typeof MUSCLE_GROUPS)[number]["id"];
-
 export function computeRisk(m: Member): RiskLevel {
   if (!m.ultimaSesion) return "riesgo";
 
