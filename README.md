@@ -7,9 +7,11 @@
   arriba en pantallas grandes — antes se quedaba arriba siempre,
   incómodo de alcanzar con el pulgar en el móvil.
 - **"Cerrar sesión" en `/mi-ranking`.** Antes no había forma de
-  "salir" desde ahí — ahora hay un botón, igual que en `/dashboard`,
-  que desvincula este dispositivo del socio (`clearDeviceMemberId` en
-  `lib/memberStore.ts`) y te lleva a `/login`.
+  "salir" desde ahí. Un socio real nunca pasa por `/login` (llega por
+  NFC o teléfono+PIN), así que el botón no le manda ahí — desvincula
+  el dispositivo (`clearDeviceMemberId`) y la propia pantalla cambia
+  al momento a "aún no te has registrado", con el formulario de
+  teléfono+PIN ya integrado para volver a entrar.
 
 - **`/mi-ranking` reorganizado en 4 pestañas** (Resumen, Racha, Premios,
   Ranking) en vez de una sola página larga con scroll. En móvil, las

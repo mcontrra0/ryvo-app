@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { GYM_NAME, GYM_ID } from "@/lib/mockData";
 import { Reward, CashbackRule, DEFAULT_CASHBACK_RULE, Member } from "@/lib/types";
 import { getRewardsForGym } from "@/lib/rewardsStore";
@@ -16,7 +15,6 @@ import {
   loginWithPhonePin,
   clearDeviceMemberId,
 } from "@/lib/memberStore";
-import { logout as clearDemoSession } from "@/lib/auth";
 import Logo from "@/components/Logo";
 import StreakCard from "@/components/StreakCard";
 
@@ -92,7 +90,6 @@ function DeviceLoginForm({ onSuccess }: { onSuccess: (m: Member) => void }) {
 }
 
 function MiRankingInner() {
-  const router = useRouter();
   const [tab, setTab] = useState<Tab>("overview");
   const [me, setMe] = useState<Member | null | undefined>(undefined);
   const [ranking, setRanking] = useState<Member[]>([]);
@@ -127,8 +124,7 @@ function MiRankingInner() {
 
   function handleLogout() {
     clearDeviceMemberId();
-    clearDemoSession();
-    router.push("/login");
+    setMe(null);
   }
 
   if (me === undefined) return null;
