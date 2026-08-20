@@ -30,6 +30,14 @@ import RewardsEditor from "@/components/RewardsEditor";
 
 type Tab = "resumen" | "riesgo" | "ranking" | "actividad" | "premios";
 
+const TABS: { id: Tab; label: string; icon: string }[] = [
+  { id: "resumen", label: "Resumen", icon: "📊" },
+  { id: "riesgo", label: "Radar", icon: "🚦" },
+  { id: "ranking", label: "Ranking", icon: "🏅" },
+  { id: "actividad", label: "Actividad", icon: "📈" },
+  { id: "premios", label: "Premios", icon: "🏆" },
+];
+
 export default function DashboardPage() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("resumen");
@@ -83,7 +91,7 @@ export default function DashboardPage() {
 
   return (
     <RequireRole role="ceo">
-    <main className="flex-1 bg-podium-chalk px-4 sm:px-6 py-10 overflow-x-hidden">
+    <main className="flex-1 bg-podium-chalk px-4 sm:px-6 pt-10 pb-24 sm:pb-10 overflow-x-hidden">
       <div className="max-w-2xl mx-auto w-full">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-1">
           <div>
@@ -103,23 +111,14 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex flex-nowrap gap-2 mt-6 mb-8 border-b border-podium-asphalt/10 overflow-x-auto overflow-y-hidden -mx-4 px-4 sm:mx-0 sm:px-0">
-          <TabButton active={tab === "resumen"} onClick={() => setTab("resumen")}>
-            Resumen
-          </TabButton>
-          <TabButton active={tab === "riesgo"} onClick={() => setTab("riesgo")}>
-            Radar de riesgo
-          </TabButton>
-          <TabButton active={tab === "ranking"} onClick={() => setTab("ranking")}>
-            Ranking
-          </TabButton>
-          <TabButton active={tab === "actividad"} onClick={() => setTab("actividad")}>
-            Actividad
-          </TabButton>
-          <TabButton active={tab === "premios"} onClick={() => setTab("premios")}>
-            Premios
-          </TabButton>
+        {/* Tabs — arriba en pantallas grandes (sm+) */}
+        <div className="hidden sm:flex flex-nowrap gap-2 mt-6 mb-8 border-b border-podium-asphalt/10 overflow-x-auto overflow-y-hidden">
+          {TABS.map((t) => (
+            <TabButton key={t.id} active={tab === t.id} onClick={() => setTab(t.id)}>
+              <span className="mr-1">{t.icon}</span>
+              {t.label}
+            </TabButton>
+          ))}
         </div>
 
         {tab === "resumen" && (
@@ -372,6 +371,22 @@ export default function DashboardPage() {
 
         {tab === "premios" && <RewardsEditor />}
       </div>
+
+      {/* Barra de pestañas fija abajo — solo en móvil */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-podium-chalk border-t border-podium-asphalt/10 flex">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors ${
+              tab === t.id ? "text-podium-track-dark" : "text-podium-asphalt/40"
+            }`}
+          >
+            <span className="text-lg leading-none">{t.icon}</span>
+            <span className="font-mono text-[9px] uppercase tracking-wide">{t.label}</span>
+          </button>
+        ))}
+      </nav>
     </main>
     </RequireRole>
   );

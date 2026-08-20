@@ -1,6 +1,15 @@
-# Ryvo — MVP (mi-ranking en pestañas, no scroll largo)
+# Ryvo — MVP (dashboard con pestañas móviles + cerrar sesión en mi-ranking)
 
 ## Qué cambió en esta vuelta
+
+- **`/dashboard` con el mismo patrón de pestañas responsive que
+  `/mi-ranking`.** Barra fija abajo con iconos en móvil, pestañas
+  arriba en pantallas grandes — antes se quedaba arriba siempre,
+  incómodo de alcanzar con el pulgar en el móvil.
+- **"Cerrar sesión" en `/mi-ranking`.** Antes no había forma de
+  "salir" desde ahí — ahora hay un botón, igual que en `/dashboard`,
+  que desvincula este dispositivo del socio (`clearDeviceMemberId` en
+  `lib/memberStore.ts`) y te lleva a `/login`.
 
 - **`/mi-ranking` reorganizado en 4 pestañas** (Resumen, Racha, Premios,
   Ranking) en vez de una sola página larga con scroll. En móvil, las

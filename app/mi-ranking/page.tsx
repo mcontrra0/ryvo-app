@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { GYM_NAME, GYM_ID } from "@/lib/mockData";
 import { Reward, CashbackRule, DEFAULT_CASHBACK_RULE, Member } from "@/lib/types";
 import { getRewardsForGym } from "@/lib/rewardsStore";
@@ -13,7 +14,9 @@ import {
   getPendingClaim,
   claimForgottenCheckout,
   loginWithPhonePin,
+  clearDeviceMemberId,
 } from "@/lib/memberStore";
+import { logout as clearDemoSession } from "@/lib/auth";
 import Logo from "@/components/Logo";
 import StreakCard from "@/components/StreakCard";
 
@@ -89,6 +92,7 @@ function DeviceLoginForm({ onSuccess }: { onSuccess: (m: Member) => void }) {
 }
 
 function MiRankingInner() {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("overview");
   const [me, setMe] = useState<Member | null | undefined>(undefined);
   const [ranking, setRanking] = useState<Member[]>([]);
@@ -119,6 +123,12 @@ function MiRankingInner() {
       setMe(await getDeviceMember());
       setRanking(await getRanking(GYM_ID));
     }
+  }
+
+  function handleLogout() {
+    clearDeviceMemberId();
+    clearDemoSession();
+    router.push("/login");
   }
 
   if (me === undefined) return null;
@@ -173,11 +183,21 @@ function MiRankingInner() {
   return (
     <main className="flex-1 bg-podium-chalk text-podium-asphalt px-6 pt-10 pb-24 sm:pb-10">
       <div className="max-w-sm mx-auto w-full">
-        <Logo size="sm" className="mb-3" />
-        <p className="font-mono text-xs tracking-[0.3em] uppercase text-podium-asphalt/50 mb-1">
-          {GYM_NAME}
-        </p>
-        <h1 className="font-display text-4xl uppercase tracking-tight mb-6">Tu progreso</h1>
+        <div className="flex items-start justify-between mb-1">
+          <div>
+            <Logo size="sm" className="mb-3" />
+            <p className="font-mono text-xs tracking-[0.3em] uppercase text-podium-asphalt/50 mb-1">
+              {GYM_NAME}
+            </p>
+            <h1 className="font-display text-4xl uppercase tracking-tight mb-6">Tu progreso</h1>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="font-mono text-xs uppercase tracking-widest text-podium-asphalt/50 hover:text-podium-asphalt underline shrink-0 mt-2"
+          >
+            Cerrar sesión
+          </button>
+        </div>
 
         {/* Pestañas — arriba en pantallas grandes (sm+), abajo fijas en móvil */}
         <div className="hidden sm:flex gap-2 mb-8 border-b border-podium-asphalt/10">
