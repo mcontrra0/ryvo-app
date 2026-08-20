@@ -19,7 +19,7 @@ import { getGymBySlug } from "./gymStore";
 
 const DEVICE_MEMBER_KEY = "podium_device_member_id";
 
-export const MIN_MINUTES = 5; // ⚠️ TEMPORAL para pruebas — volver a 45 antes de producción real
+export const MIN_MINUTES = 45;
 const ABANDON_HOURS = 3;
 const COMODIN_COOLDOWN_DAYS = 7;
 const CLAIM_WINDOW_HOURS = 3;
