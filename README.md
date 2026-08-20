@@ -1,6 +1,18 @@
-# Ryvo — MVP (segundo pase de diseño — auditoría propia)
+# Ryvo — MVP (logros de racha: exponenciales, sin límite)
 
-## Qué cambié en esta vuelta (análisis propio, no ejemplos dados)
+## Qué cambió en esta vuelta
+
+- **Logros por sesiones totales, arreglados dos veces en la misma
+  vuelta.** Primero: el "10 sesiones" solo se explicaba en un `title`
+  (tooltip de ratón), invisible en móvil — ahora el texto está visible
+  en la propia insignia. Segundo, más de fondo: la lista era fija (10,
+  25, 50, 100, 200) y se agotaba — alguien con años de gimnasio se
+  quedaba con todo desbloqueado y nada más que perseguir. Ahora es
+  **exponencial y sin límite** (10, 25, 50, 100, 250, 500, 1000,
+  2500...) — cada hito exige proporcionalmente más que el anterior, y
+  `/mi-ranking` siempre muestra una ventana de 5 alrededor del
+  progreso real del socio (2 ya conseguidos + los siguientes por
+  venir), calculada con `getMilestoneWindow` en `lib/types.ts`.
 
 - **Elevación consistente.** Casi ninguna tarjeta tenía sombra en toda
   la app (todo era borde plano) — añadida una sombra sutil coherente
