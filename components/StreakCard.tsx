@@ -5,7 +5,7 @@ import {
   Member,
   WEEKLY_GOAL_OPTIONS,
   STREAK_FREEZE_COST_XP,
-  SESSION_MILESTONES,
+  getMilestoneWindow,
 } from "@/lib/types";
 import { updateWeeklyGoal, buyStreakFreeze, getMemberCheckinDays } from "@/lib/memberStore";
 import { IconStreak, IconFreeze, IconTrophy, IconLock, IconBadge } from "@/components/icons";
@@ -199,7 +199,7 @@ export default function StreakCard({
         Logros — sesiones totales entrenadas
       </p>
       <div className="flex gap-2 flex-wrap">
-        {SESSION_MILESTONES.map((milestone) => {
+        {getMilestoneWindow(member.totalSesionesValidas).map((milestone) => {
           const unlocked = member.totalSesionesValidas >= milestone;
           return (
             <div

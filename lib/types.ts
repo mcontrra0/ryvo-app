@@ -32,7 +32,37 @@ export const WEEKLY_GOAL_OPTIONS = [1, 2, 3, 4, 5, 6] as const;
 export const STREAK_FREEZE_COST_XP = 250;
 
 // Umbrales de sesiones totales para los logros personales de /mi-ranking
-export const SESSION_MILESTONES = [10, 25, 50, 100, 200] as const;
+// Hitos de sesiones totales — crecimiento EXPONENCIAL (~x2-2.5 cada
+// vez: 10, 25, 50, 100, 250, 500, 1000, 2500...), no lineal. Así los
+// primeros caen rápido y motivan a quien empieza, pero cada hito
+// siguiente exige proporcionalmente más esfuerzo — nunca se vuelve
+// trivial para quien lleva años, y no hay límite superior fijo.
+function generateMilestones(count: number): number[] {
+  const pattern = [1, 2.5, 5]; // "cifras bonitas" dentro de cada década
+  const result: number[] = [];
+  let magnitude = 10;
+  let i = 0;
+  while (result.length < count) {
+    result.push(Math.round(pattern[i] * magnitude));
+    i++;
+    if (i >= pattern.length) {
+      i = 0;
+      magnitude *= 10;
+    }
+  }
+  return result;
+}
+
+// Devuelve una "ventana" de hitos alrededor del progreso actual — los
+// últimos conseguidos + los próximos por venir — en vez de generar
+// (y mostrar) la secuencia entera.
+export function getMilestoneWindow(totalSesiones: number, count = 5): number[] {
+  const all = generateMilestones(40); // de sobra para cualquier progreso realista
+  const nextIndex = all.findIndex((m) => m > totalSesiones);
+  const firstUnreached = nextIndex === -1 ? all.length - 1 : nextIndex;
+  const start = Math.max(0, firstUnreached - 2); // muestra 2 ya conseguidos + el resto por venir
+  return all.slice(start, start + count);
+}
 
 // Índice de semana simple (no es un cálculo ISO 8601 real, solo un
 // contador consistente de "semanas desde una fecha ancla fija") — vale
