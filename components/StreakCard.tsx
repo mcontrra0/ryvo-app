@@ -92,7 +92,7 @@ export default function StreakCard({
   const monthLabel = new Date().toLocaleDateString("es-ES", { month: "long", year: "numeric" });
 
   return (
-    <div className="rounded-lg border border-podium-gold/30 bg-podium-gold/5 p-5 mb-8">
+    <div className="rounded-lg border border-podium-gold/30 bg-podium-gold/5 p-5 mb-8 shadow-[0_1px_3px_rgba(27,27,31,0.06)]">
       <div className="flex items-center justify-between mb-4">
         <p className="font-mono text-[11px] uppercase tracking-widest text-podium-gold flex items-center gap-2">
           <IconBadge icon={IconStreak} tone="gold" size="sm" />

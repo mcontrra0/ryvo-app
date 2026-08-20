@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import { IconTap, IconShield, IconTrophy, IconSun, IconBadge } from "@/components/icons";
 
 export default function LandingPage() {
   return (
@@ -71,26 +72,30 @@ export default function LandingPage() {
             Cómo funciona
           </p>
           <h2 className="font-display text-4xl uppercase tracking-tight text-center mb-14">
-            Tres piezas, cero fricción
+            Cuatro piezas, cero fricción
           </h2>
 
           <div className="flex flex-col gap-10">
             <FeatureRow
+              icon={IconTap}
               tag="01 · Fichaje"
               title="Una placa junto a la entrada, nada más"
               desc="El socio toca al entrar y al salir. Sin app que descargar, sin login. Solo contamos lo que sí podemos medir de forma fiable: que estuvo entrenando al menos 45 minutos."
             />
             <FeatureRow
+              icon={IconShield}
               tag="02 · Radar de riesgo"
               title="Sabes quién se va a ir antes de que se vaya"
               desc="Cada lunes, tu equipo recibe una lista clara: socios activos, en descenso y en riesgo real de baja — con nombre y racha. Nada de revisar hojas de cálculo."
             />
             <FeatureRow
+              icon={IconTrophy}
               tag="03 · Premios y ranking"
               title="Cada sesión suma XP hacia un premio real"
               desc="Batidos, descuentos, meses gratis — tú decides el premio. El socio ve su progreso en el móvil, y el ranking del gimnasio salta en la pantalla de la sala."
             />
             <FeatureRow
+              icon={IconSun}
               tag="04 · Horas valle"
               title="Llena las horas muertas, no solo las punta"
               desc="Tú decides el tramo horario y el bonus de XP. Los socios con horario flexible tienen un motivo real para venir cuando tu gimnasio está más vacío, no solo a las 19h como todos."
@@ -151,10 +156,23 @@ function StatCard({ value, label }: { value: string; label: string }) {
   );
 }
 
-function FeatureRow({ tag, title, desc }: { tag: string; title: string; desc: string }) {
+function FeatureRow({
+  icon: Icon,
+  tag,
+  title,
+  desc,
+}: {
+  icon: (props: { className?: string }) => React.ReactElement;
+  tag: string;
+  title: string;
+  desc: string;
+}) {
   return (
     <div className="grid sm:grid-cols-[140px_1fr] gap-2 sm:gap-8">
-      <p className="font-mono text-xs uppercase tracking-widest text-podium-track-dark">{tag}</p>
+      <div className="flex sm:flex-col items-center sm:items-start gap-2 sm:gap-3">
+        <IconBadge icon={Icon} tone="track" />
+        <p className="font-mono text-xs uppercase tracking-widest text-podium-track-dark">{tag}</p>
+      </div>
       <div>
         <h3 className="font-display text-2xl uppercase tracking-tight mb-2">{title}</h3>
         <p className="text-podium-asphalt/60 leading-relaxed">{desc}</p>

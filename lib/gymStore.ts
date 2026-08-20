@@ -15,9 +15,6 @@ export interface GymRecord {
   name: string;
   slug: string;
   min_sessions_per_week: number;
-  cashback_enabled: boolean;
-  cashback_min_days_per_month: number;
-  cashback_discount_euros: number;
   rewards_customized: boolean;
   offpeak_enabled: boolean;
   offpeak_start_hour: number;
