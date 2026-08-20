@@ -6,7 +6,7 @@ import { getGymBySlug } from "./gymStore";
 
 // ============================================================
 // Capa de datos real sobre Supabase. Sustituye a la versión anterior
-// en localStorage — la lógica de negocio (racha semanal, cashback,
+// en localStorage — la lógica de negocio (racha semanal,
 // comodín de "olvidé fichar") es la MISMA que antes, solo cambia de
 // dónde vienen y a dónde van los datos.
 //
@@ -38,10 +38,6 @@ export function hasValidSessionToday(member: Member): boolean {
   return todayKey(new Date(member.ultimaSesion)) === todayKey();
 }
 
-function monthKey(d = new Date()): string {
-  return d.toISOString().slice(0, 7); // YYYY-MM
-}
-
 interface MemberRow {
   id: string;
   full_name: string;
@@ -54,8 +50,6 @@ interface MemberRow {
   racha_semanas: number;
   weekly_goal_days: number;
   streak_freezes: number;
-  cashback_month_key: string | null;
-  session_days_this_month: string[] | null;
   last_comodin_claim: string | null;
   anomalias_gps: number;
 }
@@ -81,8 +75,6 @@ function rowToMember(row: MemberRow, activity?: ActivityRow): Member {
     weeklyGoalDays: row.weekly_goal_days ?? DEFAULT_WEEKLY_GOAL_DAYS,
     streakFreezes: row.streak_freezes ?? 0,
     anomaliasGps: row.anomalias_gps,
-    sessionDaysThisMonth: row.session_days_this_month ?? [],
-    cashbackMonthKey: row.cashback_month_key,
     lastComodinClaim: row.last_comodin_claim,
   };
 }
@@ -213,7 +205,7 @@ export async function loginWithPhonePin(
   return rowToMember(data as MemberRow);
 }
 
-// ---------- Racha semanal (objetivo PERSONAL, no del gimnasio) + cashback ----------
+// ---------- Racha semanal (objetivo PERSONAL, no del gimnasio) ----------
 
 function computeWeeklyUpdate(
   current: Member,
@@ -260,24 +252,12 @@ function computeWeeklyUpdate(
   return { currentWeekIndex: weekIdx, currentWeekSessions: 1, racha, freezeConsumed };
 }
 
-function computeUpdatedCashbackDays(
-  current: Member,
-  today: string
-): { days: string[]; monthKey: string } {
-  const mKey = monthKey();
-  const startingDays = current.cashbackMonthKey === mKey ? current.sessionDaysThisMonth : [];
-  const days = startingDays.includes(today) ? startingDays : [...startingDays, today];
-  return { days, monthKey: mKey };
-}
-
 // XP por sesión general validada (fichaje de entrada + salida, 45+ min)
 export async function awardXp(memberId: string, xp: number) {
   if (!supabase) return;
   const current = await getMemberById(memberId);
   if (!current) return;
 
-  const today = todayKey();
-  const { days, monthKey: mKey } = computeUpdatedCashbackDays(current, today);
   const weekly = computeWeeklyUpdate(current, getWeekIndex(new Date()));
 
   const { error } = await supabase
@@ -290,8 +270,6 @@ export async function awardXp(memberId: string, xp: number) {
       current_week_sessions: weekly.currentWeekSessions,
       racha_semanas: weekly.racha,
       streak_freezes: current.streakFreezes - (weekly.freezeConsumed ? 1 : 0),
-      session_days_this_month: days,
-      cashback_month_key: mKey,
     })
     .eq("id", memberId);
 

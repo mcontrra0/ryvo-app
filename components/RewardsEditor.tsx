@@ -1,34 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CashbackRule, Reward } from "@/lib/types";
+import { Reward } from "@/lib/types";
 import { GYM_ID } from "@/lib/mockData";
 import { getRewardsForGym, saveRewardsForGym, newBlankReward } from "@/lib/rewardsStore";
-import { getCashbackRuleForGym, saveCashbackRuleForGym } from "@/lib/cashbackStore";
 import { getOffpeakRuleForGym, saveOffpeakRuleForGym, OffpeakRule } from "@/lib/offpeakStore";
-import { IconPercent, IconSun, IconTrophy, IconBadge } from "@/components/icons";
+import { IconSun, IconTrophy, IconBadge } from "@/components/icons";
 
 export default function RewardsEditor() {
   const [rewards, setRewards] = useState<Reward[]>([]);
-  const [cashback, setCashback] = useState<CashbackRule | null>(null);
   const [offpeak, setOffpeak] = useState<OffpeakRule | null>(null);
   const [savedMsg, setSavedMsg] = useState(false);
 
   useEffect(() => {
     (async () => {
       setRewards(await getRewardsForGym(GYM_ID));
-      setCashback(await getCashbackRuleForGym(GYM_ID));
       setOffpeak(await getOffpeakRuleForGym(GYM_ID));
     })();
   }, []);
 
   function updateOffpeak(patch: Partial<OffpeakRule>) {
     setOffpeak((prev) => (prev ? { ...prev, ...patch } : prev));
-    setSavedMsg(false);
-  }
-
-  function updateCashback(patch: Partial<CashbackRule>) {
-    setCashback((prev) => (prev ? { ...prev, ...patch } : prev));
     setSavedMsg(false);
   }
 
@@ -47,15 +39,11 @@ export default function RewardsEditor() {
     setSavedMsg(false);
   }
 
-  // Un único botón guarda las dos cosas a la vez — antes había un botón
-  // separado para el cashback y otro para los premios, y era fácil
-  // pulsar el que no tocaba pensando que ya se había guardado todo.
   async function handleSaveAll() {
     const clean = rewards.filter((r) => r.title.trim().length > 0 && r.xpRequired > 0);
     await saveRewardsForGym(GYM_ID, clean);
     setRewards(await getRewardsForGym(GYM_ID)); // recarga ya ordenado por XP
 
-    if (cashback) await saveCashbackRuleForGym(GYM_ID, cashback);
     if (offpeak) await saveOffpeakRuleForGym(GYM_ID, offpeak);
 
     setSavedMsg(true);
@@ -70,50 +58,6 @@ export default function RewardsEditor() {
         guardan solo para <span className="font-medium">{GYM_ID}</span>,
         no afectan a otros gimnasios.
       </p>
-
-      <div className="rounded-md border border-podium-mint/30 bg-podium-mint/5 p-4 mb-8">
-        <div className="flex items-center justify-between mb-3">
-          <p className="font-mono text-[11px] uppercase tracking-widest text-podium-mint flex items-center gap-2">
-            <IconBadge icon={IconPercent} tone="mint" size="sm" />
-            Cashback (alternativa a los premios)
-          </p>
-          <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={cashback?.enabled ?? false}
-              onChange={(e) => updateCashback({ enabled: e.target.checked })}
-            />
-            Activado
-          </label>
-        </div>
-
-        {cashback && (
-          <div className="flex flex-col sm:flex-row gap-3">
-            <label className="flex-1 flex items-center gap-2 text-sm">
-              Ven
-              <input
-                type="number"
-                min={1}
-                value={cashback.minDaysPerMonth}
-                onChange={(e) => updateCashback({ minDaysPerMonth: Number(e.target.value) || 0 })}
-                className="w-20 bg-transparent border border-podium-asphalt/20 rounded-md px-2 py-1.5 text-sm tabular focus:outline-none focus:border-podium-track-dark"
-              />
-              días al mes →
-            </label>
-            <label className="flex-1 flex items-center gap-2 text-sm">
-              Descuento
-              <input
-                type="number"
-                min={1}
-                value={cashback.discountEuros}
-                onChange={(e) => updateCashback({ discountEuros: Number(e.target.value) || 0 })}
-                className="w-20 bg-transparent border border-podium-asphalt/20 rounded-md px-2 py-1.5 text-sm tabular focus:outline-none focus:border-podium-track-dark"
-              />
-              € en la cuota
-            </label>
-          </div>
-        )}
-      </div>
 
       <div className="rounded-md border border-podium-asphalt/12 bg-white p-4 mb-8">
         <div className="flex items-center justify-between mb-3">
@@ -241,7 +185,7 @@ export default function RewardsEditor() {
 
       {savedMsg && (
         <p className="font-mono text-xs text-podium-mint mt-3">
-          ✓ Guardado — premios y cashback actualizados para tus socios.
+          ✓ Guardado — premios y horas valle actualizados para tus socios.
         </p>
       )}
     </div>

@@ -59,8 +59,6 @@ export interface Member {
   weeklyGoalDays: number; // objetivo semanal DEL SOCIO, no del gimnasio
   streakFreezes: number; // congeladores de racha disponibles
   anomaliasGps: number; // fichajes marcados como "lejos del gym" — solo aviso, no bloqueo
-  sessionDaysThisMonth: string[]; // fechas únicas (YYYY-MM-DD) del mes en curso, para el cashback
-  cashbackMonthKey: string | null; // "YYYY-MM" del mes que se está contando
   lastComodinClaim: string | null; // última vez que usó el comodín de "olvidé fichar"
 }
 
@@ -68,20 +66,6 @@ export interface Member {
 // en el momento del fichaje, nunca para bloquear (ver checkin/page.tsx)
 export const GYM_COORDS = { lat: 37.4923, lng: -5.9159 }; // San José de la Rinconada
 export const GPS_WARN_METERS = 150;
-
-// Regla de cashback — alternativa al XP para gimnasios con socios que no
-// conectan con la estética "gamer" (ver feedback de Gemini)
-export interface CashbackRule {
-  enabled: boolean;
-  minDaysPerMonth: number;
-  discountEuros: number;
-}
-
-export const DEFAULT_CASHBACK_RULE: CashbackRule = {
-  enabled: true,
-  minDaysPerMonth: 12,
-  discountEuros: 5,
-};
 
 export function computeRisk(m: Member): RiskLevel {
   if (!m.ultimaSesion) return "riesgo";

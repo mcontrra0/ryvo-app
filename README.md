@@ -1,6 +1,16 @@
-# Ryvo — MVP (identidad de marca extendida a toda la app)
+# Ryvo — MVP (cashback eliminado)
 
 ## Qué cambió en esta vuelta
+
+- **Quitado el sistema de cashback por completo.** Ya no convencía
+  como funcionalidad. Eliminado: `lib/cashbackStore.ts` entero, la
+  interfaz `CashbackRule` y sus campos en `Member`
+  (`sessionDaysThisMonth`, `cashbackMonthKey`), la sección del CEO en
+  `RewardsEditor`, y la tarjeta "Ahorro en tu cuota" de `/mi-ranking`.
+  Las columnas correspondientes en Supabase (`gyms.cashback_*`,
+  `members.cashback_month_key`) se quedan sin usar en la base de datos
+  — mismo criterio que con el grupo muscular: no hacía falta otra
+  migración solo para borrarlas, no molestan estando ahí.
 
 - **Iconos propios en toda la app**, no solo en la navegación —
   añadidos `IconFreeze`, `IconLock`, `IconCheck`, `IconSun`,

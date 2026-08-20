@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { GYM_NAME, GYM_ID } from "@/lib/mockData";
-import { Reward, CashbackRule, DEFAULT_CASHBACK_RULE, Member } from "@/lib/types";
+import { Reward, Member } from "@/lib/types";
 import { getRewardsForGym } from "@/lib/rewardsStore";
-import { getCashbackRuleForGym } from "@/lib/cashbackStore";
 import { getOffpeakRuleForGym, DEFAULT_OFFPEAK_RULE, OffpeakRule } from "@/lib/offpeakStore";
 import {
   getDeviceMember,
@@ -17,7 +16,7 @@ import {
 } from "@/lib/memberStore";
 import Logo from "@/components/Logo";
 import StreakCard from "@/components/StreakCard";
-import { IconOverview, IconStreak, IconTrophy, IconPodium, IconLock, IconPercent, IconSun, IconBadge } from "@/components/icons";
+import { IconOverview, IconStreak, IconTrophy, IconPodium, IconLock, IconSun, IconBadge } from "@/components/icons";
 
 type Tab = "overview" | "racha" | "premios" | "ranking";
 
@@ -95,7 +94,6 @@ function MiRankingInner() {
   const [me, setMe] = useState<Member | null | undefined>(undefined);
   const [ranking, setRanking] = useState<Member[]>([]);
   const [rewards, setRewards] = useState<Reward[]>([]);
-  const [cashback, setCashback] = useState<CashbackRule>(DEFAULT_CASHBACK_RULE);
   const [offpeak, setOffpeak] = useState<OffpeakRule>(DEFAULT_OFFPEAK_RULE);
   const [claimEligible, setClaimEligible] = useState(false);
   const [claimMsg, setClaimMsg] = useState<string | null>(null);
@@ -106,7 +104,6 @@ function MiRankingInner() {
       setMe(m);
       setRanking(await getRanking(GYM_ID));
       setRewards(await getRewardsForGym(GYM_ID));
-      setCashback(await getCashbackRuleForGym(GYM_ID));
       setOffpeak(await getOffpeakRuleForGym(GYM_ID));
       if (m) setClaimEligible((await getPendingClaim(m.id)).eligible);
     })();
@@ -166,13 +163,6 @@ function MiRankingInner() {
         ((me.xpTotal - prevThreshold) / (nextReward.xpRequired - prevThreshold)) * 100
       )
     : 100;
-
-  const cashbackDays = (me.sessionDaysThisMonth ?? []).length;
-  const cashbackAchieved = cashbackDays >= cashback.minDaysPerMonth;
-  const cashbackProgress = Math.min(
-    100,
-    Math.round((cashbackDays / cashback.minDaysPerMonth) * 100)
-  );
 
   const topSlice = ranking.slice(0, 10);
   const meInTop = topSlice.some((m) => m.id === me.id);
@@ -273,43 +263,6 @@ function MiRankingInner() {
                 </div>
               )}
             </div>
-
-            {/* Cashback — alternativa para quien prefiere ahorro directo a premios */}
-            {cashback.enabled && (
-              <div className="rounded-lg border border-podium-mint/30 bg-podium-mint/5 p-5 mb-6">
-                <p className="font-mono text-[11px] uppercase tracking-widest text-podium-mint mb-2 flex items-center gap-2">
-                  <IconBadge icon={IconPercent} tone="mint" size="sm" />
-                  Ahorro en tu cuota
-                </p>
-                {cashbackAchieved ? (
-                  <p className="text-sm">
-                    Has venido {cashbackDays} días este mes — te descontamos{" "}
-                    <span className="font-semibold">{cashback.discountEuros}€</span> en la
-                    próxima cuota.
-                  </p>
-                ) : (
-                  <>
-                    <p className="text-sm text-podium-asphalt/70 mb-2">
-                      Ven {cashback.minDaysPerMonth} días este mes y te
-                      descontamos {cashback.discountEuros}€ en la cuota del mes
-                      que viene.
-                    </p>
-                    <div className="flex justify-between font-mono text-[10px] text-podium-asphalt/50 mb-1">
-                      <span>Este mes</span>
-                      <span>
-                        {cashbackDays} / {cashback.minDaysPerMonth} días
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-podium-asphalt/10 overflow-hidden">
-                      <div
-                        className="h-full bg-podium-mint rounded-full transition-all"
-                        style={{ width: `${Math.max(4, cashbackProgress)}%` }}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
 
             {/* Horas valle — para que el socio sepa cuándo aprovechar el bonus */}
             {offpeak.enabled && (
