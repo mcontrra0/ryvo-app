@@ -24,18 +24,19 @@ import ChartErrorBoundary from "@/components/ChartErrorBoundary";
 import RequireRole from "@/components/RequireRole";
 import Logo from "@/components/Logo";
 import RewardsEditor from "@/components/RewardsEditor";
+import { IconOverview, IconShield, IconPodium, IconTrend, IconTrophy } from "@/components/icons";
 
 // NOTA: Dashboard del CEO/dueño del gimnasio — protegido por login
 // (RequireRole role="ceo", ver components/RequireRole.tsx).
 
 type Tab = "resumen" | "riesgo" | "ranking" | "actividad" | "premios";
 
-const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: "resumen", label: "Resumen", icon: "📊" },
-  { id: "riesgo", label: "Radar", icon: "🚦" },
-  { id: "ranking", label: "Ranking", icon: "🏅" },
-  { id: "actividad", label: "Actividad", icon: "📈" },
-  { id: "premios", label: "Premios", icon: "🏆" },
+const TABS: { id: Tab; label: string; Icon: typeof IconOverview }[] = [
+  { id: "resumen", label: "Resumen", Icon: IconOverview },
+  { id: "riesgo", label: "Radar", Icon: IconShield },
+  { id: "ranking", label: "Ranking", Icon: IconPodium },
+  { id: "actividad", label: "Actividad", Icon: IconTrend },
+  { id: "premios", label: "Premios", Icon: IconTrophy },
 ];
 
 export default function DashboardPage() {
@@ -115,7 +116,7 @@ export default function DashboardPage() {
         <div className="hidden sm:flex flex-nowrap gap-2 mt-6 mb-8 border-b border-podium-asphalt/10 overflow-x-auto overflow-y-hidden">
           {TABS.map((t) => (
             <TabButton key={t.id} active={tab === t.id} onClick={() => setTab(t.id)}>
-              <span className="mr-1">{t.icon}</span>
+              <t.Icon className="w-4 h-4 mr-1" />
               {t.label}
             </TabButton>
           ))}
@@ -373,16 +374,16 @@ export default function DashboardPage() {
       </div>
 
       {/* Barra de pestañas fija abajo — solo en móvil */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-podium-chalk border-t border-podium-asphalt/10 flex">
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-podium-asphalt border-t border-podium-track/30 flex">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors ${
-              tab === t.id ? "text-podium-track-dark" : "text-podium-asphalt/40"
+            className={`flex-1 flex flex-col items-center gap-1 py-2.5 transition-colors ${
+              tab === t.id ? "text-podium-track" : "text-podium-chalk/40"
             }`}
           >
-            <span className="text-lg leading-none">{t.icon}</span>
+            <t.Icon className="w-5 h-5" />
             <span className="font-mono text-[9px] uppercase tracking-wide">{t.label}</span>
           </button>
         ))}
@@ -439,7 +440,7 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className={`font-mono text-xs uppercase tracking-widest px-1 pb-3 -mb-px border-b-2 transition-colors shrink-0 whitespace-nowrap ${
+      className={`font-mono text-xs uppercase tracking-widest px-1 pb-3 -mb-px border-b-2 transition-colors shrink-0 whitespace-nowrap inline-flex items-center ${
         active
           ? "border-podium-track-dark text-podium-asphalt"
           : "border-transparent text-podium-asphalt/40 hover:text-podium-asphalt/70"

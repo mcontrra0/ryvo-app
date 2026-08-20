@@ -17,14 +17,15 @@ import {
 } from "@/lib/memberStore";
 import Logo from "@/components/Logo";
 import StreakCard from "@/components/StreakCard";
+import { IconOverview, IconStreak, IconTrophy, IconPodium } from "@/components/icons";
 
 type Tab = "overview" | "racha" | "premios" | "ranking";
 
-const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: "overview", label: "Resumen", icon: "📊" },
-  { id: "racha", label: "Racha", icon: "🔥" },
-  { id: "premios", label: "Premios", icon: "🏆" },
-  { id: "ranking", label: "Ranking", icon: "🏅" },
+const TABS: { id: Tab; label: string; Icon: typeof IconOverview }[] = [
+  { id: "overview", label: "Resumen", Icon: IconOverview },
+  { id: "racha", label: "Racha", Icon: IconStreak },
+  { id: "premios", label: "Premios", Icon: IconTrophy },
+  { id: "ranking", label: "Ranking", Icon: IconPodium },
 ];
 
 function DeviceLoginForm({ onSuccess }: { onSuccess: (m: Member) => void }) {
@@ -207,7 +208,7 @@ function MiRankingInner() {
                   : "border-transparent text-podium-asphalt/40 hover:text-podium-asphalt/70"
               }`}
             >
-              <span>{t.icon}</span>
+              <t.Icon className="w-4 h-4" />
               {t.label}
             </button>
           ))}
@@ -386,16 +387,16 @@ function MiRankingInner() {
       </div>
 
       {/* Barra de pestañas fija abajo — solo en móvil */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-podium-chalk border-t border-podium-asphalt/10 flex">
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-podium-asphalt border-t border-podium-track/30 flex">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors ${
-              tab === t.id ? "text-podium-track-dark" : "text-podium-asphalt/40"
+            className={`flex-1 flex flex-col items-center gap-1 py-2.5 transition-colors ${
+              tab === t.id ? "text-podium-track" : "text-podium-chalk/40"
             }`}
           >
-            <span className="text-lg leading-none">{t.icon}</span>
+            <t.Icon className="w-5 h-5" />
             <span className="font-mono text-[9px] uppercase tracking-wide">{t.label}</span>
           </button>
         ))}

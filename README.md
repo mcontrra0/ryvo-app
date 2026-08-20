@@ -1,6 +1,22 @@
-# Ryvo — MVP (dashboard con pestañas móviles + cerrar sesión en mi-ranking)
+# Ryvo — MVP (navegación con identidad propia, no emoji genéricos)
 
 ## Qué cambió en esta vuelta
+
+- **Iconos de navegación propios** (`components/icons.tsx`) — seis
+  iconos monocromáticos dibujados a medida (heredan el color vía
+  `currentColor`), sustituyendo los emoji genéricos de las pestañas en
+  `/mi-ranking` y `/dashboard`. Dos conectan con la marca a propósito:
+  Ranking usa bloques de podio, y Actividad un trazo ascendente que
+  recuerda al icono del logo.
+- **Barra de navegación móvil en oscuro con acento lima** — antes era
+  blanca con texto gris (genérica, podría ser cualquier app). Ahora
+  fondo `podium-asphalt`, borde superior lima, pestaña activa en lima
+  brillante — mucho más de marca.
+- Es un primer pase de identidad centrado en la navegación (lo más
+  visible y usado todo el rato); el resto de la app (tarjetas, iconos
+  sueltos tipo 🔥/🏆 dentro del contenido) sigue con emoji por ahora —
+  si quieres, seguimos extendiendo este mismo lenguaje visual más
+  adelante.
 
 - **`/dashboard` con el mismo patrón de pestañas responsive que
   `/mi-ranking`.** Barra fija abajo con iconos en móvil, pestañas
