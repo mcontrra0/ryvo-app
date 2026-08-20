@@ -1,6 +1,24 @@
-# Ryvo — MVP (logros de racha: exponenciales, sin límite)
+# Ryvo — MVP (Equipos: grupos de 2-4 con responsabilidad social)
 
 ## Qué cambió en esta vuelta
+
+- **Nueva pestaña "Equipo" en `/mi-ranking`.** Grupos cerrados de 2 a 4
+  socios, creados por ellos mismos (un socio solo puede estar en uno a
+  la vez). Se une por código o enlace de invitación
+  (`/mi-ranking?join=CÓDIGO`, se abre directo en la pestaña correcta y
+  precarga el código).
+  - **Sin "puntuación de grupo" que castigue** — cada socio conserva su
+    propio XP y objetivo semanal intactos. El equipo solo hace visible
+    el estado de cada uno frente a SU propio objetivo esta semana
+    ("Marco: 2/2 ✓ · Sara: 0/2"), para dar el empujón social sin que
+    nadie "arrastre hacia abajo" el número de otro.
+  - **Ranking de equipos** — ordenado por la SUMA de XP de sus
+    miembros (nunca resta un miembro flojo, solo suma menos).
+  - Tablas nuevas: `teams`, `team_members` (`lib/teamStore.ts`).
+  - ⚠️ Límite conocido: si alguien abre el enlace de invitación sin
+    estar registrado todavía, el código no sobrevive al paso de
+    registro — tendría que pedir el código de nuevo después. Aceptable
+    para esta versión, pero queda anotado.
 
 - **Logros por sesiones totales, arreglados dos veces en la misma
   vuelta.** Primero: el "10 sesiones" solo se explicaba en un `title`

@@ -89,6 +89,17 @@ export function IconTap({ className }: { className?: string }) {
   );
 }
 
+export function IconTeam({ className }: { className?: string }) {
+  return (
+    <Svg className={className}>
+      <circle cx="8.5" cy="7.5" r="3" />
+      <circle cx="16.5" cy="8.5" r="2.4" opacity="0.7" />
+      <path d="M2.5 20c0-3.7 2.8-5.8 6-5.8s6 2.1 6 5.8a1 1 0 01-1 1h-10a1 1 0 01-1-1z" />
+      <path d="M14 14.5c.4-.1.7-.1 1.1-.1 2.4 0 4.9 1.8 4.9 5a1 1 0 01-1 1h-2.6" opacity="0.7" />
+    </Svg>
+  );
+}
+
 export function IconFreeze({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className={className} aria-hidden="true">

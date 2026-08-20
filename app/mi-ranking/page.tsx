@@ -16,13 +16,15 @@ import {
 } from "@/lib/memberStore";
 import Logo from "@/components/Logo";
 import StreakCard from "@/components/StreakCard";
-import { IconOverview, IconStreak, IconTrophy, IconPodium, IconLock, IconSun, IconBadge } from "@/components/icons";
+import TeamCard from "@/components/TeamCard";
+import { IconOverview, IconStreak, IconTrophy, IconPodium, IconLock, IconSun, IconTeam, IconBadge } from "@/components/icons";
 
-type Tab = "overview" | "racha" | "premios" | "ranking";
+type Tab = "overview" | "racha" | "equipo" | "premios" | "ranking";
 
 const TABS: { id: Tab; label: string; Icon: typeof IconOverview }[] = [
   { id: "overview", label: "Resumen", Icon: IconOverview },
   { id: "racha", label: "Racha", Icon: IconStreak },
+  { id: "equipo", label: "Equipo", Icon: IconTeam },
   { id: "premios", label: "Premios", Icon: IconTrophy },
   { id: "ranking", label: "Ranking", Icon: IconPodium },
 ];
@@ -99,6 +101,9 @@ function MiRankingInner() {
   const [claimMsg, setClaimMsg] = useState<string | null>(null);
 
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).has("join")) {
+      setTab("equipo");
+    }
     (async () => {
       const m = await getDeviceMember();
       setMe(m);
@@ -283,6 +288,8 @@ function MiRankingInner() {
         )}
 
         {tab === "racha" && <StreakCard member={me} onMemberUpdate={setMe} />}
+
+        {tab === "equipo" && <TeamCard memberId={me.id} />}
 
         {tab === "premios" && (
           <div className="flex flex-col gap-2">
