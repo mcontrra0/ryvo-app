@@ -1,6 +1,17 @@
-# Ryvo — MVP (icono corregido, calendario real, sin grupo muscular)
+# Ryvo — MVP (mi-ranking en pestañas, no scroll largo)
 
 ## Qué cambió en esta vuelta
+
+- **`/mi-ranking` reorganizado en 4 pestañas** (Resumen, Racha, Premios,
+  Ranking) en vez de una sola página larga con scroll. En móvil, las
+  pestañas viven en una **barra fija abajo con iconos** (patrón nativo
+  tipo Instagram/Twitter); en pantallas grandes (sm+), se convierten en
+  pestañas arriba, mismo estilo que ya usa `/dashboard`. Mismo estado,
+  dos formas de mostrarlo según el tamaño de pantalla.
+  - Nota: la pestaña se llama "Racha" a secas, no "Racha mensual" — la
+    lógica sigue siendo semanal (objetivo por semana), así que
+    "mensual" no encajaba con lo que hay dentro (aunque el calendario
+    visualmente muestre el mes en curso).
 
 - **Icono con fondo sólido.** El PNG del logo era transparente, así que
   tanto la app de Android como el splash de la PWA lo componían sobre
