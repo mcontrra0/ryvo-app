@@ -195,8 +195,8 @@ export default function StreakCard({
       </p>
 
       {/* Logros personales */}
-      <p className="font-mono text-[10px] uppercase tracking-widest text-podium-asphalt/50 mt-5 mb-2">
-        Logros
+      <p className="font-mono text-[10px] uppercase tracking-widest text-podium-asphalt/50 mt-5 mb-1">
+        Logros — sesiones totales entrenadas
       </p>
       <div className="flex gap-2 flex-wrap">
         {SESSION_MILESTONES.map((milestone) => {
@@ -204,8 +204,7 @@ export default function StreakCard({
           return (
             <div
               key={milestone}
-              title={`${milestone} sesiones`}
-              className={`flex flex-col items-center justify-center w-14 h-14 rounded-md font-mono text-[10px] ${
+              className={`flex flex-col items-center justify-center w-16 h-16 rounded-md ${
                 unlocked
                   ? "bg-podium-mint/15 border border-podium-mint/40 text-podium-mint"
                   : "bg-podium-asphalt/5 border border-podium-asphalt/10 text-podium-asphalt/30"
@@ -218,7 +217,10 @@ export default function StreakCard({
                   <IconLock className="w-4 h-4 text-podium-asphalt/30" />
                 )}
               </span>
-              {milestone}
+              <span className="font-mono text-xs font-semibold leading-none">{milestone}</span>
+              <span className="font-mono text-[7px] uppercase tracking-wide opacity-70 mt-0.5">
+                sesiones
+              </span>
             </div>
           );
         })}
