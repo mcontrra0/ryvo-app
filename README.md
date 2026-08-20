@@ -1,6 +1,25 @@
-# Ryvo — MVP (navegación con identidad propia, no emoji genéricos)
+# Ryvo — MVP (identidad de marca extendida a toda la app)
 
 ## Qué cambió en esta vuelta
+
+- **Iconos propios en toda la app**, no solo en la navegación —
+  añadidos `IconFreeze`, `IconLock`, `IconCheck`, `IconSun`,
+  `IconAlert`, `IconPercent` (`components/icons.tsx`), y sustituidos
+  emoji en `StreakCard`, `mi-ranking` (cashback, horas valle,
+  escalera de premios), `checkin` (ya fichaste hoy, avisos de hora
+  valle), `dashboard` (anomalías GPS), y `RewardsEditor`.
+- **`IconBadge`** — insignia circular con fondo de color alrededor del
+  icono, usada en cabeceras de sección para un acabado más cuidado que
+  un emoji suelto.
+- **Medallas del ranking con los colores de marca de verdad**
+  (`podium-gold`/`silver`/`bronze`, ya existían como tokens pero no se
+  usaban ahí) en vez de emoji 🥇🥈🥉 — círculos de color con el número
+  dentro.
+- Lo que se dejó **a propósito** sin tocar: los círculos 🔴🟡🟢 del
+  Radar de Riesgo (funcionan como semáforo real, cambiar el color por
+  un icono no mejora nada), y un par de emoji con tono cálido/humano
+  en vez de genérico (👋 en el registro, 🚀 en el banner de la
+  landing) — no todo necesita convertirse en icono de marca.
 
 - **Iconos de navegación propios** (`components/icons.tsx`) — seis
   iconos monocromáticos dibujados a medida (heredan el color vía

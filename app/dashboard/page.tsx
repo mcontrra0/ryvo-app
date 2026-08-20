@@ -24,7 +24,7 @@ import ChartErrorBoundary from "@/components/ChartErrorBoundary";
 import RequireRole from "@/components/RequireRole";
 import Logo from "@/components/Logo";
 import RewardsEditor from "@/components/RewardsEditor";
-import { IconOverview, IconShield, IconPodium, IconTrend, IconTrophy } from "@/components/icons";
+import { IconOverview, IconShield, IconPodium, IconTrend, IconTrophy, IconAlert } from "@/components/icons";
 
 // NOTA: Dashboard del CEO/dueño del gimnasio — protegido por login
 // (RequireRole role="ceo", ver components/RequireRole.tsx).
@@ -247,8 +247,9 @@ export default function DashboardPage() {
             </div>
 
             {totalAnomalies > 0 && (
-              <p className="font-mono text-[11px] text-podium-asphalt/40 mb-10">
-                📍 {totalAnomalies} fichaje(s) marcados como "lejos del gimnasio" este
+              <p className="font-mono text-[11px] text-podium-asphalt/40 mb-10 flex items-start gap-1.5">
+                <IconAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                {totalAnomalies} fichaje(s) marcados como "lejos del gimnasio" este
                 periodo — solo aviso, no bloquean el XP. Revísalo si un mismo socio se
                 repite mucho.
               </p>

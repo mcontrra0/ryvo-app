@@ -17,7 +17,7 @@ import {
 } from "@/lib/memberStore";
 import Logo from "@/components/Logo";
 import StreakCard from "@/components/StreakCard";
-import { IconOverview, IconStreak, IconTrophy, IconPodium } from "@/components/icons";
+import { IconOverview, IconStreak, IconTrophy, IconPodium, IconLock, IconPercent, IconSun, IconBadge } from "@/components/icons";
 
 type Tab = "overview" | "racha" | "premios" | "ranking";
 
@@ -277,12 +277,13 @@ function MiRankingInner() {
             {/* Cashback — alternativa para quien prefiere ahorro directo a premios */}
             {cashback.enabled && (
               <div className="rounded-lg border border-podium-mint/30 bg-podium-mint/5 p-5 mb-6">
-                <p className="font-mono text-[11px] uppercase tracking-widest text-podium-mint mb-2">
+                <p className="font-mono text-[11px] uppercase tracking-widest text-podium-mint mb-2 flex items-center gap-2">
+                  <IconBadge icon={IconPercent} tone="mint" size="sm" />
                   Ahorro en tu cuota
                 </p>
                 {cashbackAchieved ? (
                   <p className="text-sm">
-                    🎉 Has venido {cashbackDays} días este mes — te descontamos{" "}
+                    Has venido {cashbackDays} días este mes — te descontamos{" "}
                     <span className="font-semibold">{cashback.discountEuros}€</span> en la
                     próxima cuota.
                   </p>
@@ -313,8 +314,9 @@ function MiRankingInner() {
             {/* Horas valle — para que el socio sepa cuándo aprovechar el bonus */}
             {offpeak.enabled && (
               <div className="rounded-lg border border-podium-gold/30 bg-podium-gold/5 p-5 mb-6">
-                <p className="font-mono text-[11px] uppercase tracking-widest text-podium-gold mb-2">
-                  🌤️ Horas valle
+                <p className="font-mono text-[11px] uppercase tracking-widest text-podium-gold mb-2 flex items-center gap-2">
+                  <IconBadge icon={IconSun} tone="gold" size="sm" />
+                  Horas valle
                 </p>
                 <p className="text-sm text-podium-asphalt/70">
                   Entrena entre las <span className="font-semibold text-podium-asphalt">{offpeak.startHour}h</span> y las{" "}
@@ -348,7 +350,13 @@ function MiRankingInner() {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-lg">{unlocked ? "🏆" : "🔒"}</span>
+                    <span className="text-lg">
+                      {unlocked ? (
+                        <IconTrophy className="w-5 h-5 text-podium-mint" />
+                      ) : (
+                        <IconLock className="w-5 h-5 text-podium-asphalt/30" />
+                      )}
+                    </span>
                     <div>
                       <p className={unlocked ? "font-medium" : "text-podium-asphalt/70"}>{r.title}</p>
                       <p className="font-mono text-[10px] text-podium-asphalt/50">
@@ -406,7 +414,14 @@ function MiRankingInner() {
 }
 
 function RankRow({ position, member, isMe }: { position: number; member: Member; isMe: boolean }) {
-  const medal = position === 1 ? "🥇" : position === 2 ? "🥈" : position === 3 ? "🥉" : null;
+  const medalColor =
+    position === 1
+      ? "bg-podium-gold text-podium-asphalt"
+      : position === 2
+      ? "bg-podium-silver text-podium-asphalt"
+      : position === 3
+      ? "bg-podium-bronze text-podium-chalk"
+      : null;
   return (
     <div
       className={`flex items-center justify-between rounded-md px-4 py-2.5 ${
@@ -414,7 +429,13 @@ function RankRow({ position, member, isMe }: { position: number; member: Member;
       }`}
     >
       <div className="flex items-center gap-3">
-        <span className="font-mono text-sm w-6 text-podium-asphalt/50 tabular">{medal ?? position}</span>
+        {medalColor ? (
+          <span className={`w-6 h-6 rounded-full flex items-center justify-center font-mono text-[11px] font-bold shrink-0 ${medalColor}`}>
+            {position}
+          </span>
+        ) : (
+          <span className="font-mono text-sm w-6 text-podium-asphalt/50 tabular text-center">{position}</span>
+        )}
         <span className={isMe ? "font-semibold" : ""}>
           {member.fullName}
           {isMe && <span className="text-podium-gold"> (tú)</span>}
