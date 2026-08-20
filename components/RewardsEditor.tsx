@@ -6,6 +6,7 @@ import { GYM_ID } from "@/lib/mockData";
 import { getRewardsForGym, saveRewardsForGym, newBlankReward } from "@/lib/rewardsStore";
 import { getCashbackRuleForGym, saveCashbackRuleForGym } from "@/lib/cashbackStore";
 import { getOffpeakRuleForGym, saveOffpeakRuleForGym, OffpeakRule } from "@/lib/offpeakStore";
+import { IconPercent, IconSun, IconTrophy, IconBadge } from "@/components/icons";
 
 export default function RewardsEditor() {
   const [rewards, setRewards] = useState<Reward[]>([]);
@@ -72,7 +73,8 @@ export default function RewardsEditor() {
 
       <div className="rounded-md border border-podium-mint/30 bg-podium-mint/5 p-4 mb-8">
         <div className="flex items-center justify-between mb-3">
-          <p className="font-mono text-[11px] uppercase tracking-widest text-podium-mint">
+          <p className="font-mono text-[11px] uppercase tracking-widest text-podium-mint flex items-center gap-2">
+            <IconBadge icon={IconPercent} tone="mint" size="sm" />
             Cashback (alternativa a los premios)
           </p>
           <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
@@ -115,7 +117,8 @@ export default function RewardsEditor() {
 
       <div className="rounded-md border border-podium-asphalt/12 bg-white p-4 mb-8">
         <div className="flex items-center justify-between mb-3">
-          <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50">
+          <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50 flex items-center gap-2">
+            <IconBadge icon={IconSun} tone="gold" size="sm" />
             Horas valle
           </p>
           <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
@@ -166,7 +169,8 @@ export default function RewardsEditor() {
         )}
       </div>
 
-      <h3 className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50 mb-3">
+      <h3 className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50 mb-3 flex items-center gap-2">
+        <IconBadge icon={IconTrophy} tone="track" size="sm" />
         Premios por XP
       </h3>
       <div className="flex flex-col gap-3 mb-6">

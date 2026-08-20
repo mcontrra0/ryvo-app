@@ -1,6 +1,52 @@
-# Ryvo — MVP (mi-ranking en pestañas, no scroll largo)
+# Ryvo — MVP (identidad de marca extendida a toda la app)
 
 ## Qué cambió en esta vuelta
+
+- **Iconos propios en toda la app**, no solo en la navegación —
+  añadidos `IconFreeze`, `IconLock`, `IconCheck`, `IconSun`,
+  `IconAlert`, `IconPercent` (`components/icons.tsx`), y sustituidos
+  emoji en `StreakCard`, `mi-ranking` (cashback, horas valle,
+  escalera de premios), `checkin` (ya fichaste hoy, avisos de hora
+  valle), `dashboard` (anomalías GPS), y `RewardsEditor`.
+- **`IconBadge`** — insignia circular con fondo de color alrededor del
+  icono, usada en cabeceras de sección para un acabado más cuidado que
+  un emoji suelto.
+- **Medallas del ranking con los colores de marca de verdad**
+  (`podium-gold`/`silver`/`bronze`, ya existían como tokens pero no se
+  usaban ahí) en vez de emoji 🥇🥈🥉 — círculos de color con el número
+  dentro.
+- Lo que se dejó **a propósito** sin tocar: los círculos 🔴🟡🟢 del
+  Radar de Riesgo (funcionan como semáforo real, cambiar el color por
+  un icono no mejora nada), y un par de emoji con tono cálido/humano
+  en vez de genérico (👋 en el registro, 🚀 en el banner de la
+  landing) — no todo necesita convertirse en icono de marca.
+
+- **Iconos de navegación propios** (`components/icons.tsx`) — seis
+  iconos monocromáticos dibujados a medida (heredan el color vía
+  `currentColor`), sustituyendo los emoji genéricos de las pestañas en
+  `/mi-ranking` y `/dashboard`. Dos conectan con la marca a propósito:
+  Ranking usa bloques de podio, y Actividad un trazo ascendente que
+  recuerda al icono del logo.
+- **Barra de navegación móvil en oscuro con acento lima** — antes era
+  blanca con texto gris (genérica, podría ser cualquier app). Ahora
+  fondo `podium-asphalt`, borde superior lima, pestaña activa en lima
+  brillante — mucho más de marca.
+- Es un primer pase de identidad centrado en la navegación (lo más
+  visible y usado todo el rato); el resto de la app (tarjetas, iconos
+  sueltos tipo 🔥/🏆 dentro del contenido) sigue con emoji por ahora —
+  si quieres, seguimos extendiendo este mismo lenguaje visual más
+  adelante.
+
+- **`/dashboard` con el mismo patrón de pestañas responsive que
+  `/mi-ranking`.** Barra fija abajo con iconos en móvil, pestañas
+  arriba en pantallas grandes — antes se quedaba arriba siempre,
+  incómodo de alcanzar con el pulgar en el móvil.
+- **"Cerrar sesión" en `/mi-ranking`.** Antes no había forma de
+  "salir" desde ahí. Un socio real nunca pasa por `/login` (llega por
+  NFC o teléfono+PIN), así que el botón no le manda ahí — desvincula
+  el dispositivo (`clearDeviceMemberId`) y la propia pantalla cambia
+  al momento a "aún no te has registrado", con el formulario de
+  teléfono+PIN ya integrado para volver a entrar.
 
 - **`/mi-ranking` reorganizado en 4 pestañas** (Resumen, Racha, Premios,
   Ranking) en vez de una sola página larga con scroll. En móvil, las

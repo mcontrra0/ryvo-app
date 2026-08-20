@@ -13,17 +13,19 @@ import {
   getPendingClaim,
   claimForgottenCheckout,
   loginWithPhonePin,
+  clearDeviceMemberId,
 } from "@/lib/memberStore";
 import Logo from "@/components/Logo";
 import StreakCard from "@/components/StreakCard";
+import { IconOverview, IconStreak, IconTrophy, IconPodium, IconLock, IconPercent, IconSun, IconBadge } from "@/components/icons";
 
 type Tab = "overview" | "racha" | "premios" | "ranking";
 
-const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: "overview", label: "Resumen", icon: "📊" },
-  { id: "racha", label: "Racha", icon: "🔥" },
-  { id: "premios", label: "Premios", icon: "🏆" },
-  { id: "ranking", label: "Ranking", icon: "🏅" },
+const TABS: { id: Tab; label: string; Icon: typeof IconOverview }[] = [
+  { id: "overview", label: "Resumen", Icon: IconOverview },
+  { id: "racha", label: "Racha", Icon: IconStreak },
+  { id: "premios", label: "Premios", Icon: IconTrophy },
+  { id: "ranking", label: "Ranking", Icon: IconPodium },
 ];
 
 function DeviceLoginForm({ onSuccess }: { onSuccess: (m: Member) => void }) {
@@ -121,6 +123,11 @@ function MiRankingInner() {
     }
   }
 
+  function handleLogout() {
+    clearDeviceMemberId();
+    setMe(null);
+  }
+
   if (me === undefined) return null;
 
   if (me === null) {
@@ -173,11 +180,21 @@ function MiRankingInner() {
   return (
     <main className="flex-1 bg-podium-chalk text-podium-asphalt px-6 pt-10 pb-24 sm:pb-10">
       <div className="max-w-sm mx-auto w-full">
-        <Logo size="sm" className="mb-3" />
-        <p className="font-mono text-xs tracking-[0.3em] uppercase text-podium-asphalt/50 mb-1">
-          {GYM_NAME}
-        </p>
-        <h1 className="font-display text-4xl uppercase tracking-tight mb-6">Tu progreso</h1>
+        <div className="flex items-start justify-between mb-1">
+          <div>
+            <Logo size="sm" className="mb-3" />
+            <p className="font-mono text-xs tracking-[0.3em] uppercase text-podium-asphalt/50 mb-1">
+              {GYM_NAME}
+            </p>
+            <h1 className="font-display text-4xl uppercase tracking-tight mb-6">Tu progreso</h1>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="font-mono text-xs uppercase tracking-widest text-podium-asphalt/50 hover:text-podium-asphalt underline shrink-0 mt-2"
+          >
+            Cerrar sesión
+          </button>
+        </div>
 
         {/* Pestañas — arriba en pantallas grandes (sm+), abajo fijas en móvil */}
         <div className="hidden sm:flex gap-2 mb-8 border-b border-podium-asphalt/10">
@@ -191,7 +208,7 @@ function MiRankingInner() {
                   : "border-transparent text-podium-asphalt/40 hover:text-podium-asphalt/70"
               }`}
             >
-              <span>{t.icon}</span>
+              <t.Icon className="w-4 h-4" />
               {t.label}
             </button>
           ))}
@@ -260,12 +277,13 @@ function MiRankingInner() {
             {/* Cashback — alternativa para quien prefiere ahorro directo a premios */}
             {cashback.enabled && (
               <div className="rounded-lg border border-podium-mint/30 bg-podium-mint/5 p-5 mb-6">
-                <p className="font-mono text-[11px] uppercase tracking-widest text-podium-mint mb-2">
+                <p className="font-mono text-[11px] uppercase tracking-widest text-podium-mint mb-2 flex items-center gap-2">
+                  <IconBadge icon={IconPercent} tone="mint" size="sm" />
                   Ahorro en tu cuota
                 </p>
                 {cashbackAchieved ? (
                   <p className="text-sm">
-                    🎉 Has venido {cashbackDays} días este mes — te descontamos{" "}
+                    Has venido {cashbackDays} días este mes — te descontamos{" "}
                     <span className="font-semibold">{cashback.discountEuros}€</span> en la
                     próxima cuota.
                   </p>
@@ -296,8 +314,9 @@ function MiRankingInner() {
             {/* Horas valle — para que el socio sepa cuándo aprovechar el bonus */}
             {offpeak.enabled && (
               <div className="rounded-lg border border-podium-gold/30 bg-podium-gold/5 p-5 mb-6">
-                <p className="font-mono text-[11px] uppercase tracking-widest text-podium-gold mb-2">
-                  🌤️ Horas valle
+                <p className="font-mono text-[11px] uppercase tracking-widest text-podium-gold mb-2 flex items-center gap-2">
+                  <IconBadge icon={IconSun} tone="gold" size="sm" />
+                  Horas valle
                 </p>
                 <p className="text-sm text-podium-asphalt/70">
                   Entrena entre las <span className="font-semibold text-podium-asphalt">{offpeak.startHour}h</span> y las{" "}
@@ -331,7 +350,13 @@ function MiRankingInner() {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-lg">{unlocked ? "🏆" : "🔒"}</span>
+                    <span className="text-lg">
+                      {unlocked ? (
+                        <IconTrophy className="w-5 h-5 text-podium-mint" />
+                      ) : (
+                        <IconLock className="w-5 h-5 text-podium-asphalt/30" />
+                      )}
+                    </span>
                     <div>
                       <p className={unlocked ? "font-medium" : "text-podium-asphalt/70"}>{r.title}</p>
                       <p className="font-mono text-[10px] text-podium-asphalt/50">
@@ -370,16 +395,16 @@ function MiRankingInner() {
       </div>
 
       {/* Barra de pestañas fija abajo — solo en móvil */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-podium-chalk border-t border-podium-asphalt/10 flex">
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-podium-asphalt border-t border-podium-track/30 flex">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors ${
-              tab === t.id ? "text-podium-track-dark" : "text-podium-asphalt/40"
+            className={`flex-1 flex flex-col items-center gap-1 py-2.5 transition-colors ${
+              tab === t.id ? "text-podium-track" : "text-podium-chalk/40"
             }`}
           >
-            <span className="text-lg leading-none">{t.icon}</span>
+            <t.Icon className="w-5 h-5" />
             <span className="font-mono text-[9px] uppercase tracking-wide">{t.label}</span>
           </button>
         ))}
@@ -389,7 +414,14 @@ function MiRankingInner() {
 }
 
 function RankRow({ position, member, isMe }: { position: number; member: Member; isMe: boolean }) {
-  const medal = position === 1 ? "🥇" : position === 2 ? "🥈" : position === 3 ? "🥉" : null;
+  const medalColor =
+    position === 1
+      ? "bg-podium-gold text-podium-asphalt"
+      : position === 2
+      ? "bg-podium-silver text-podium-asphalt"
+      : position === 3
+      ? "bg-podium-bronze text-podium-chalk"
+      : null;
   return (
     <div
       className={`flex items-center justify-between rounded-md px-4 py-2.5 ${
@@ -397,7 +429,13 @@ function RankRow({ position, member, isMe }: { position: number; member: Member;
       }`}
     >
       <div className="flex items-center gap-3">
-        <span className="font-mono text-sm w-6 text-podium-asphalt/50 tabular">{medal ?? position}</span>
+        {medalColor ? (
+          <span className={`w-6 h-6 rounded-full flex items-center justify-center font-mono text-[11px] font-bold shrink-0 ${medalColor}`}>
+            {position}
+          </span>
+        ) : (
+          <span className="font-mono text-sm w-6 text-podium-asphalt/50 tabular text-center">{position}</span>
+        )}
         <span className={isMe ? "font-semibold" : ""}>
           {member.fullName}
           {isMe && <span className="text-podium-gold"> (tú)</span>}

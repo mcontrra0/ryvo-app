@@ -24,11 +24,20 @@ import ChartErrorBoundary from "@/components/ChartErrorBoundary";
 import RequireRole from "@/components/RequireRole";
 import Logo from "@/components/Logo";
 import RewardsEditor from "@/components/RewardsEditor";
+import { IconOverview, IconShield, IconPodium, IconTrend, IconTrophy, IconAlert } from "@/components/icons";
 
 // NOTA: Dashboard del CEO/dueño del gimnasio — protegido por login
 // (RequireRole role="ceo", ver components/RequireRole.tsx).
 
 type Tab = "resumen" | "riesgo" | "ranking" | "actividad" | "premios";
+
+const TABS: { id: Tab; label: string; Icon: typeof IconOverview }[] = [
+  { id: "resumen", label: "Resumen", Icon: IconOverview },
+  { id: "riesgo", label: "Radar", Icon: IconShield },
+  { id: "ranking", label: "Ranking", Icon: IconPodium },
+  { id: "actividad", label: "Actividad", Icon: IconTrend },
+  { id: "premios", label: "Premios", Icon: IconTrophy },
+];
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -83,7 +92,7 @@ export default function DashboardPage() {
 
   return (
     <RequireRole role="ceo">
-    <main className="flex-1 bg-podium-chalk px-4 sm:px-6 py-10 overflow-x-hidden">
+    <main className="flex-1 bg-podium-chalk px-4 sm:px-6 pt-10 pb-24 sm:pb-10 overflow-x-hidden">
       <div className="max-w-2xl mx-auto w-full">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-1">
           <div>
@@ -103,23 +112,14 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex flex-nowrap gap-2 mt-6 mb-8 border-b border-podium-asphalt/10 overflow-x-auto overflow-y-hidden -mx-4 px-4 sm:mx-0 sm:px-0">
-          <TabButton active={tab === "resumen"} onClick={() => setTab("resumen")}>
-            Resumen
-          </TabButton>
-          <TabButton active={tab === "riesgo"} onClick={() => setTab("riesgo")}>
-            Radar de riesgo
-          </TabButton>
-          <TabButton active={tab === "ranking"} onClick={() => setTab("ranking")}>
-            Ranking
-          </TabButton>
-          <TabButton active={tab === "actividad"} onClick={() => setTab("actividad")}>
-            Actividad
-          </TabButton>
-          <TabButton active={tab === "premios"} onClick={() => setTab("premios")}>
-            Premios
-          </TabButton>
+        {/* Tabs — arriba en pantallas grandes (sm+) */}
+        <div className="hidden sm:flex flex-nowrap gap-2 mt-6 mb-8 border-b border-podium-asphalt/10 overflow-x-auto overflow-y-hidden">
+          {TABS.map((t) => (
+            <TabButton key={t.id} active={tab === t.id} onClick={() => setTab(t.id)}>
+              <t.Icon className="w-4 h-4 mr-1" />
+              {t.label}
+            </TabButton>
+          ))}
         </div>
 
         {tab === "resumen" && (
@@ -247,8 +247,9 @@ export default function DashboardPage() {
             </div>
 
             {totalAnomalies > 0 && (
-              <p className="font-mono text-[11px] text-podium-asphalt/40 mb-10">
-                📍 {totalAnomalies} fichaje(s) marcados como "lejos del gimnasio" este
+              <p className="font-mono text-[11px] text-podium-asphalt/40 mb-10 flex items-start gap-1.5">
+                <IconAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                {totalAnomalies} fichaje(s) marcados como "lejos del gimnasio" este
                 periodo — solo aviso, no bloquean el XP. Revísalo si un mismo socio se
                 repite mucho.
               </p>
@@ -372,6 +373,22 @@ export default function DashboardPage() {
 
         {tab === "premios" && <RewardsEditor />}
       </div>
+
+      {/* Barra de pestañas fija abajo — solo en móvil */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-podium-asphalt border-t border-podium-track/30 flex">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex-1 flex flex-col items-center gap-1 py-2.5 transition-colors ${
+              tab === t.id ? "text-podium-track" : "text-podium-chalk/40"
+            }`}
+          >
+            <t.Icon className="w-5 h-5" />
+            <span className="font-mono text-[9px] uppercase tracking-wide">{t.label}</span>
+          </button>
+        ))}
+      </nav>
     </main>
     </RequireRole>
   );
@@ -424,7 +441,7 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className={`font-mono text-xs uppercase tracking-widest px-1 pb-3 -mb-px border-b-2 transition-colors shrink-0 whitespace-nowrap ${
+      className={`font-mono text-xs uppercase tracking-widest px-1 pb-3 -mb-px border-b-2 transition-colors shrink-0 whitespace-nowrap inline-flex items-center ${
         active
           ? "border-podium-track-dark text-podium-asphalt"
           : "border-transparent text-podium-asphalt/40 hover:text-podium-asphalt/70"

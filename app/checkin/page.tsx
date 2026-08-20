@@ -21,6 +21,7 @@ import {
 import RegisterForm from "@/components/RegisterForm";
 import Logo from "@/components/Logo";
 import { getOffpeakRuleForGym, isWithinOffpeak, OffpeakRule } from "@/lib/offpeakStore";
+import { IconCheck, IconSun } from "@/components/icons";
 
 // ============================================================
 // Destino real de la URL grabada en el NFC/QR de la entrada. El socio
@@ -170,7 +171,7 @@ function CheckinContent() {
 
         {phase === "already-today" && (
           <div className="flex flex-col items-center text-center gap-4">
-            <p className="text-3xl">✋</p>
+            <IconCheck className="w-12 h-12 text-podium-mint" />
             <p className="font-display text-2xl uppercase tracking-tight">
               Ya has fichado hoy, {memberName.split(" ")[0]}
             </p>
@@ -201,8 +202,9 @@ function CheckinContent() {
               XP. Necesitas al menos {MIN_MINUTES} minutos.
             </p>
             {offpeak && isWithinOffpeak(new Date().getHours(), offpeak) && (
-              <p className="font-mono text-xs text-podium-mint bg-podium-mint/10 border border-podium-mint/30 rounded-md px-3 py-2">
-                🌤️ Estás en horas valle — +{offpeak.bonusXp} XP extra al validar
+              <p className="font-mono text-xs text-podium-mint bg-podium-mint/10 border border-podium-mint/30 rounded-md px-3 py-2 flex items-center justify-center gap-2">
+                <IconSun className="w-4 h-4 shrink-0" />
+                Estás en horas valle — +{offpeak.bonusXp} XP extra al validar
               </p>
             )}
             <Link
@@ -228,8 +230,9 @@ function CheckinContent() {
                   +{tapOutResult.xp} XP
                 </p>
                 {tapOutResult.offpeakBonus > 0 && (
-                  <p className="font-mono text-xs text-podium-mint">
-                    🌤️ Incluye +{tapOutResult.offpeakBonus} XP por hora valle
+                  <p className="font-mono text-xs text-podium-mint flex items-center gap-1.5">
+                    <IconSun className="w-3.5 h-3.5 shrink-0" />
+                    Incluye +{tapOutResult.offpeakBonus} XP por hora valle
                   </p>
                 )}
                 {tapOutResult.rankPosition && (

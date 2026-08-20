@@ -8,6 +8,7 @@ import {
   SESSION_MILESTONES,
 } from "@/lib/types";
 import { updateWeeklyGoal, buyStreakFreeze, getMemberCheckinDays } from "@/lib/memberStore";
+import { IconStreak, IconFreeze, IconTrophy, IconLock, IconBadge } from "@/components/icons";
 
 const CALENDAR_WEEKS = 6;
 const WEEKDAY_LABELS = ["L", "M", "X", "J", "V", "S", "D"];
@@ -93,8 +94,9 @@ export default function StreakCard({
   return (
     <div className="rounded-lg border border-podium-gold/30 bg-podium-gold/5 p-5 mb-8">
       <div className="flex items-center justify-between mb-4">
-        <p className="font-mono text-[11px] uppercase tracking-widest text-podium-gold">
-          🔥 Racha
+        <p className="font-mono text-[11px] uppercase tracking-widest text-podium-gold flex items-center gap-2">
+          <IconBadge icon={IconStreak} tone="gold" size="sm" />
+          Racha
         </p>
         <div className="flex items-center gap-3">
           <span className="font-display text-2xl tabular">{member.racha}</span>
@@ -132,8 +134,9 @@ export default function StreakCard({
 
       {/* Congelador de racha */}
       <div className="flex items-center justify-between rounded-md bg-white/60 border border-podium-asphalt/10 px-3 py-2 mb-4">
-        <p className="text-xs text-podium-asphalt/70">
-          🧊 Congeladores: <span className="font-semibold">{member.streakFreezes}</span> —
+        <p className="text-xs text-podium-asphalt/70 flex items-center gap-2">
+          <IconFreeze className="w-4 h-4 shrink-0" />
+          Congeladores: <span className="font-semibold">{member.streakFreezes}</span> —
           protege una semana floja sin perder la racha
         </p>
         <button
@@ -180,15 +183,15 @@ export default function StreakCard({
                     day.inCurrentMonth ? "text-podium-asphalt/70" : "text-podium-asphalt/25"
                   }`}
                 >
-                  {trained ? <span className="text-sm">🔥</span> : day.dayNumber}
+                  {trained ? <IconStreak className="w-4 h-4 text-podium-gold" /> : day.dayNumber}
                 </div>
               );
             })}
           </div>
         ))}
       </div>
-      <p className="font-mono text-[10px] text-podium-asphalt/40 mt-2">
-        🔥 = día con sesión válida registrada
+      <p className="font-mono text-[10px] text-podium-asphalt/40 mt-2 flex items-center gap-1.5">
+        <IconStreak className="w-3 h-3 text-podium-gold" /> = día con sesión válida registrada
       </p>
 
       {/* Logros personales */}
@@ -208,7 +211,13 @@ export default function StreakCard({
                   : "bg-podium-asphalt/5 border border-podium-asphalt/10 text-podium-asphalt/30"
               }`}
             >
-              <span className="text-base leading-none mb-0.5">{unlocked ? "🏆" : "🔒"}</span>
+              <span className="leading-none mb-0.5">
+                {unlocked ? (
+                  <IconTrophy className="w-4 h-4 text-podium-mint" />
+                ) : (
+                  <IconLock className="w-4 h-4 text-podium-asphalt/30" />
+                )}
+              </span>
               {milestone}
             </div>
           );

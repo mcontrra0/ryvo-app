@@ -135,6 +135,15 @@ export function setDeviceMemberId(memberId: string) {
   localStorage.setItem(DEVICE_MEMBER_KEY, memberId);
 }
 
+// "Cerrar sesión" para un socio: este dispositivo deja de estar
+// vinculado a él — la próxima vez que entre alguien en /mi-ranking o
+// /checkin desde aquí, se le tratará como no registrado (o tendrá que
+// volver a acceder con teléfono + PIN).
+export function clearDeviceMemberId() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(DEVICE_MEMBER_KEY);
+}
+
 export async function getDeviceMember(): Promise<Member | null> {
   const id = getDeviceMemberId();
   if (!id) return null;
