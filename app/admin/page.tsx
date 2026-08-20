@@ -152,7 +152,7 @@ export default function AdminPage() {
         </div>
 
         {/* Crear gimnasio nuevo */}
-        <div className="rounded-md border border-podium-asphalt/12 bg-white p-5 mb-8">
+        <div className="rounded-md border border-podium-asphalt/12 bg-white p-5 mb-8 shadow-[0_1px_3px_rgba(27,27,31,0.06)]">
           <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50 mb-4">
             Crear gimnasio nuevo
           </p>

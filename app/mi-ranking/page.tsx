@@ -227,7 +227,7 @@ function MiRankingInner() {
             )}
 
             {/* Tarjeta de perfil */}
-            <div className="rounded-lg border border-podium-asphalt/15 bg-podium-asphalt/5 p-6 mb-6 text-center">
+            <div className="rounded-lg border border-podium-asphalt/15 bg-white p-6 mb-6 text-center shadow-[0_1px_3px_rgba(27,27,31,0.06)]">
               <p className="font-display text-2xl uppercase">{me.fullName}</p>
               <p className="font-mono text-xs text-podium-asphalt/50 mb-4">{me.memberCode}</p>
 
@@ -266,7 +266,7 @@ function MiRankingInner() {
 
             {/* Horas valle — para que el socio sepa cuándo aprovechar el bonus */}
             {offpeak.enabled && (
-              <div className="rounded-lg border border-podium-gold/30 bg-podium-gold/5 p-5 mb-6">
+              <div className="rounded-lg border border-podium-gold/30 bg-podium-gold/5 p-5 mb-6 shadow-[0_1px_3px_rgba(27,27,31,0.06)]">
                 <p className="font-mono text-[11px] uppercase tracking-widest text-podium-gold mb-2 flex items-center gap-2">
                   <IconBadge icon={IconSun} tone="gold" size="sm" />
                   Horas valle
@@ -287,9 +287,12 @@ function MiRankingInner() {
         {tab === "premios" && (
           <div className="flex flex-col gap-2">
             {rewards.length === 0 && (
-              <p className="font-mono text-xs text-podium-asphalt/40 text-center py-6 border border-dashed border-podium-asphalt/15 rounded-md">
-                Tu gimnasio todavía no ha configurado premios.
-              </p>
+              <div className="flex flex-col items-center gap-2 py-6 border border-dashed border-podium-asphalt/15 rounded-md">
+                <IconTrophy className="w-6 h-6 text-podium-asphalt/25" />
+                <p className="font-mono text-xs text-podium-asphalt/40 text-center">
+                  Tu gimnasio todavía no ha configurado premios.
+                </p>
+              </div>
             )}
             {rewards.map((r) => {
               const unlocked = me.xpTotal >= r.xpRequired;

@@ -24,7 +24,7 @@ import ChartErrorBoundary from "@/components/ChartErrorBoundary";
 import RequireRole from "@/components/RequireRole";
 import Logo from "@/components/Logo";
 import RewardsEditor from "@/components/RewardsEditor";
-import { IconOverview, IconShield, IconPodium, IconTrend, IconTrophy, IconAlert } from "@/components/icons";
+import { IconOverview, IconShield, IconPodium, IconTrend, IconTrophy, IconAlert, IconUser, IconBadge } from "@/components/icons";
 
 // NOTA: Dashboard del CEO/dueño del gimnasio — protegido por login
 // (RequireRole role="ceo", ver components/RequireRole.tsx).
@@ -129,19 +129,20 @@ export default function DashboardPage() {
             </p>
 
             <div className="grid grid-cols-3 gap-3 mb-8">
-              <KpiCard label="Socios activos" value={activos.length} emoji="🟢" />
-              <KpiCard label="En riesgo" value={riesgo.length} emoji="🔴" />
+              <KpiCard label="Socios activos" value={activos.length} icon={IconUser} tone="mint" />
+              <KpiCard label="En riesgo" value={riesgo.length} icon={IconAlert} tone="danger" />
               <KpiCard
                 label="Sesiones/semana"
                 value={sessionsThisWeek}
-                emoji="📈"
+                icon={IconTrend}
+                tone="track"
                 trend={weekChangePct}
               />
             </div>
 
             {!loading && analytics && (
               <>
-                <div className="rounded-md border border-podium-asphalt/10 bg-white p-4 mb-4 min-w-0">
+                <div className="rounded-md border border-podium-asphalt/10 bg-white p-4 mb-4 min-w-0 shadow-[0_1px_3px_rgba(27,27,31,0.06)]">
                   <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50 mb-4">
                     Sesiones por día — últimos 14 días
                   </p>
@@ -173,7 +174,7 @@ export default function DashboardPage() {
                   </ChartErrorBoundary>
                 </div>
 
-                <div className="rounded-md border border-podium-asphalt/10 bg-white p-4 mb-4 min-w-0">
+                <div className="rounded-md border border-podium-asphalt/10 bg-white p-4 mb-4 min-w-0 shadow-[0_1px_3px_rgba(27,27,31,0.06)]">
                   <div className="flex items-center justify-between mb-4">
                     <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50">
                       Horas punta
@@ -319,7 +320,7 @@ export default function DashboardPage() {
               primer mes — así se compara el ritmo de crecimiento de una
               frente a la otra de un vistazo.
             </p>
-            <div className="rounded-md border border-podium-asphalt/10 bg-white p-4 mb-4 min-w-0">
+            <div className="rounded-md border border-podium-asphalt/10 bg-white p-4 mb-4 min-w-0 shadow-[0_1px_3px_rgba(27,27,31,0.06)]">
               <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50 mb-4">
                 Crecimiento relativo (primer mes = 100)
               </p>
@@ -455,19 +456,23 @@ function TabButton({
 function KpiCard({
   label,
   value,
-  emoji,
+  icon,
+  tone = "track",
   suffix,
   trend,
 }: {
   label: string;
   value: number | string;
-  emoji: string;
+  icon: (props: { className?: string }) => React.ReactElement;
+  tone?: "track" | "gold" | "mint" | "danger";
   suffix?: string;
   trend?: number;
 }) {
   return (
-    <div className="rounded-md border border-podium-asphalt/10 bg-white px-4 py-4 text-center">
-      <p className="text-xl mb-1">{emoji}</p>
+    <div className="rounded-md border border-podium-asphalt/10 bg-white px-4 py-4 text-center shadow-[0_1px_3px_rgba(27,27,31,0.06)]">
+      <div className="flex justify-center mb-2">
+        <IconBadge icon={icon} tone={tone} />
+      </div>
       <p className="font-display text-2xl tabular">
         {value}
         {suffix && <span className="text-sm font-sans ml-1 text-podium-asphalt/50">{suffix}</span>}
@@ -498,7 +503,7 @@ function SummaryCard({
   emoji: string;
 }) {
   return (
-    <div className="rounded-md border border-podium-asphalt/10 bg-white px-4 py-4 text-center">
+    <div className="rounded-md border border-podium-asphalt/10 bg-white px-4 py-4 text-center shadow-[0_1px_3px_rgba(27,27,31,0.06)]">
       <p className="text-xl mb-1">{emoji}</p>
       <p className="font-display text-3xl tabular">{value}</p>
       <p className="font-mono text-[10px] uppercase tracking-widest text-podium-asphalt/50">

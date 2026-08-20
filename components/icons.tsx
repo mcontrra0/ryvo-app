@@ -70,6 +70,25 @@ export function IconTrend({ className }: { className?: string }) {
   );
 }
 
+export function IconUser({ className }: { className?: string }) {
+  return (
+    <Svg className={className}>
+      <circle cx="12" cy="7.5" r="4" />
+      <path d="M4.5 20.5c0-4.7 3.8-7.5 7.5-7.5s7.5 2.8 7.5 7.5a1 1 0 01-1 1H5.5a1 1 0 01-1-1z" />
+    </Svg>
+  );
+}
+
+export function IconTap({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className={className} aria-hidden="true">
+      <circle cx="9" cy="15" r="2.6" fill="currentColor" stroke="none" />
+      <path d="M14 10.5a5 5 0 010 9" />
+      <path d="M17.3 7.2a9.5 9.5 0 010 15.6" />
+    </svg>
+  );
+}
+
 export function IconFreeze({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className={className} aria-hidden="true">

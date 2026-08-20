@@ -1,6 +1,26 @@
-# Ryvo — MVP (cashback eliminado)
+# Ryvo — MVP (segundo pase de diseño — auditoría propia)
 
-## Qué cambió en esta vuelta
+## Qué cambié en esta vuelta (análisis propio, no ejemplos dados)
+
+- **Elevación consistente.** Casi ninguna tarjeta tenía sombra en toda
+  la app (todo era borde plano) — añadida una sombra sutil coherente
+  (`shadow-[0_1px_3px_rgba(27,27,31,0.06)]`) a las tarjetas principales
+  de `/dashboard`, `/mi-ranking`, `RewardsEditor`, `/admin` y
+  `StreakCard`. Es el tipo de detalle que hace que un diseño se sienta
+  cuidado en vez de plano.
+- **KPI del dashboard sin emoji.** Se habían colado otra vez emoji
+  genéricos (🟢🔴📈) justo después de arreglar la navegación —
+  sustituidos por `IconBadge` con iconos propios (`IconUser`,
+  `IconAlert`, `IconTrend`). El semáforo 🟢🟡🔴 del Radar de Riesgo se
+  deja tal cual, a propósito — ahí sí funciona como semáforo real.
+- **Landing con el mismo lenguaje visual que el resto de la app.** Los
+  4 puntos de "Cómo funciona" no tenían ningún icono — añadida una
+  insignia por punto (`IconTap`, `IconShield`, `IconTrophy`,
+  `IconSun`). De paso, arreglado el titular: decía "Tres piezas" con
+  cuatro puntos debajo (desde que añadimos Horas valle, nadie lo
+  actualizó).
+- **Estados vacíos con apoyo visual**, no solo texto — icono de trofeo
+  atenuado en "todavía no hay premios" (`RewardsEditor` y `/mi-ranking`).
 
 - **Quitado el sistema de cashback por completo.** Ya no convencía
   como funcionalidad. Eliminado: `lib/cashbackStore.ts` entero, la

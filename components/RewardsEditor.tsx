@@ -59,7 +59,7 @@ export default function RewardsEditor() {
         no afectan a otros gimnasios.
       </p>
 
-      <div className="rounded-md border border-podium-asphalt/12 bg-white p-4 mb-8">
+      <div className="rounded-md border border-podium-asphalt/12 bg-white p-4 mb-8 shadow-[0_1px_3px_rgba(27,27,31,0.06)]">
         <div className="flex items-center justify-between mb-3">
           <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50 flex items-center gap-2">
             <IconBadge icon={IconSun} tone="gold" size="sm" />
@@ -121,7 +121,7 @@ export default function RewardsEditor() {
         {rewards.map((r) => (
           <div
             key={r.id}
-            className="rounded-md border border-podium-asphalt/12 bg-white p-4 flex flex-col gap-3"
+            className="rounded-md border border-podium-asphalt/12 bg-white p-4 flex flex-col gap-3 shadow-[0_1px_3px_rgba(27,27,31,0.06)]"
           >
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <input
@@ -162,9 +162,12 @@ export default function RewardsEditor() {
         ))}
 
         {rewards.length === 0 && (
-          <p className="font-mono text-sm text-podium-asphalt/40 text-center py-8">
-            Todavía no hay premios. Añade el primero abajo.
-          </p>
+          <div className="flex flex-col items-center gap-2 py-8">
+            <IconTrophy className="w-8 h-8 text-podium-asphalt/20" />
+            <p className="font-mono text-sm text-podium-asphalt/40 text-center">
+              Todavía no hay premios. Añade el primero abajo.
+            </p>
+          </div>
         )}
       </div>
 
