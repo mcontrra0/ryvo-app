@@ -57,7 +57,7 @@ export default function LandingPage() {
             </p>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="font-display text-xl uppercase leading-none">Socio de ejemplo</p>
+                <p className="font-display text-xl uppercase leading-none">Lucía F.</p>
                 <p className="font-mono text-[10px] text-podium-asphalt/40 mt-1">#3 del ranking</p>
               </div>
               <div className="flex items-center gap-1.5 text-podium-gold shrink-0">
@@ -117,12 +117,14 @@ export default function LandingPage() {
               tag="02 · Radar de riesgo"
               title="Sabes quién se va a ir antes de que se vaya"
               desc="Cada lunes, tu equipo recibe una lista clara: socios activos, en descenso y en riesgo real de baja — con nombre y racha. Nada de revisar hojas de cálculo."
+              preview={<RiskPreview />}
             />
             <FeatureRow
               icon={IconTrophy}
               tag="03 · Premios y ranking"
               title="Cada sesión suma XP hacia un premio real"
               desc="Batidos, descuentos, meses gratis — tú decides el premio. El socio ve su progreso en el móvil, y el ranking del gimnasio salta en la pantalla de la sala."
+              preview={<PodiumPreview />}
             />
             <FeatureRow
               icon={IconSun}
@@ -216,6 +218,45 @@ function StatCard({ value, label }: { value: string; label: string }) {
   );
 }
 
+function RiskPreview() {
+  const rows = [
+    { name: "Elena C.", days: "Hace 1 día", tone: "bg-podium-mint" },
+    { name: "Marcos V.", days: "Hace 9 días", tone: "bg-podium-gold" },
+    { name: "Sara D.", days: "Hace 16 días", tone: "bg-podium-danger" },
+  ];
+  return (
+    <div className="rounded-lg border border-podium-asphalt/10 bg-podium-chalk p-3 max-w-xs">
+      {rows.map((r) => (
+        <div key={r.name} className="flex items-center gap-2.5 py-1.5">
+          <span className={`w-2 h-2 rounded-full shrink-0 ${r.tone}`} />
+          <span className="text-xs flex-1">{r.name}</span>
+          <span className="font-mono text-[10px] text-podium-asphalt/40">{r.days}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PodiumPreview() {
+  const blocks = [
+    { pos: 2, name: "Marcos", h: "h-12", tone: "bg-podium-silver" },
+    { pos: 1, name: "Elena", h: "h-16", tone: "bg-podium-gold" },
+    { pos: 3, name: "Iván", h: "h-9", tone: "bg-podium-bronze" },
+  ];
+  return (
+    <div className="flex items-end gap-2 max-w-[220px]">
+      {blocks.map((b) => (
+        <div key={b.pos} className="flex-1 flex flex-col items-center">
+          <p className="font-mono text-[10px] text-podium-asphalt/50 mb-1">{b.name}</p>
+          <div className={`w-full ${b.h} ${b.tone} rounded-t-md flex items-start justify-center pt-1`}>
+            <span className="font-display text-podium-asphalt text-sm">{b.pos}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function PricingCard({
   name,
   price,
@@ -280,11 +321,13 @@ function FeatureRow({
   tag,
   title,
   desc,
+  preview,
 }: {
   icon: (props: { className?: string }) => React.ReactElement;
   tag: string;
   title: string;
   desc: string;
+  preview?: React.ReactNode;
 }) {
   return (
     <div className="rounded-xl border border-podium-asphalt/10 bg-white p-6 sm:p-8 shadow-[0_1px_3px_rgba(27,27,31,0.06)] hover:shadow-[0_8px_20px_rgba(27,27,31,0.08)] hover:-translate-y-0.5 transition-all">
@@ -296,6 +339,7 @@ function FeatureRow({
         <div>
           <h3 className="font-display text-2xl uppercase tracking-tight mb-2">{title}</h3>
           <p className="text-podium-asphalt/60 leading-relaxed">{desc}</p>
+          {preview && <div className="mt-5">{preview}</div>}
         </div>
       </div>
     </div>

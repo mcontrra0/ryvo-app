@@ -1,6 +1,20 @@
-# Ryvo — MVP (3 tarifas, oferta fundador en la tarifa Premium)
+# Ryvo — MVP (arregla icono de racha, más vistas previas en la landing)
 
 ## Qué cambié en esta vuelta
+
+- **Arreglado `IconStreak`** — el trazo de la llama era demasiado
+  complejo para tamaños pequeños y se deformaba (se veía como una
+  comilla rota junto al "6" de racha en la landing). Sustituido por un
+  trazo más simple que aguanta bien en miniatura.
+- **Dos vistas previas ilustrativas nuevas** en "Cómo funciona" — una
+  del Radar de Riesgo (semáforo de socios) junto a esa tarjeta, y un
+  podio de ranking junto a la de Premios. Mismo criterio que la
+  primera: reconstruidas con nuestros propios colores y componentes,
+  no capturas reales.
+- ⚠️ **Las capturas reales de la app siguen pendientes** — mi entorno
+  no tiene acceso a `vercel.app` ni `supabase.co`, así que no puedo
+  capturarlas yo mismo. En cuanto me pases pantallazos de verdad, los
+  sustituyo por fotos reales de la app en vez de estas ilustraciones.
 
 - **De una tarifa única a tres** (Básico 49€, Premium 69€, Pro 99€) en
   la landing. La oferta de fundador ya no es "todos pagan 49€" — ahora
