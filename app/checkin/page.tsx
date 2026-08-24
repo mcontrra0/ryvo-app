@@ -226,7 +226,15 @@ function CheckinContent() {
                 <p className="text-podium-asphalt/70">
                   {tapOutResult.minutes} minutos de entrenamiento
                 </p>
-                <p className="font-display text-6xl tabular text-podium-gold">
+                <p
+                  className="font-display text-7xl tabular animate-[pulse_1.5s_ease-in-out_1]"
+                  style={{
+                    background: "linear-gradient(135deg, #c9a227, #8fd400)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}
+                >
                   +{tapOutResult.xp} XP
                 </p>
                 {tapOutResult.offpeakBonus > 0 && (

@@ -25,8 +25,7 @@ export function IconOverview({ className }: { className?: string }) {
 export function IconStreak({ className }: { className?: string }) {
   return (
     <Svg className={className}>
-      <path d="M12.5 2.2c1.1 3.1-1.9 4.4-2.6 6.9-.4 1.4.2 2.4 1.1 2.7-.5-1.3.1-2.1.7-2.9.2 1 1 1.4 1 2.5 0 1.3-1 2.3-2.5 2.3-1.9 0-3.7-1.5-3.7-4 0-3.9 3.1-4.7 6-7.5z" />
-      <path d="M9.2 15.6c.6 1.6 2 2.5 3.6 2.5 2.2 0 4-1.7 4-4.1 0-1.6-.7-2.5-1.3-3.4.3 1.9-.5 3-1.6 3.6.3-1.6-.3-2.4-1.1-3.1-.1 1.7-1.2 2.4-2.3 3.2-.9.6-1.5 1.1-1.3 1.3z" />
+      <path d="M12.8 2c1.3 3.4-1.7 4.9-3.1 7.4C8.2 11.8 8 13.6 9 15c-.7-2 .4-3.2 1.6-4.3-.2 1.7.7 2.6 2 3.5.9.6 1.6 1.3 1.6 2.5 0 1.9-1.7 3.3-3.9 3.3-3 0-5.6-2.3-5.6-6.1 0-5.7 4.6-6.9 8.1-11.9z" />
     </Svg>
   );
 }
@@ -86,6 +85,17 @@ export function IconTap({ className }: { className?: string }) {
       <path d="M14 10.5a5 5 0 010 9" />
       <path d="M17.3 7.2a9.5 9.5 0 010 15.6" />
     </svg>
+  );
+}
+
+export function IconTeam({ className }: { className?: string }) {
+  return (
+    <Svg className={className}>
+      <circle cx="8.5" cy="7.5" r="3" />
+      <circle cx="16.5" cy="8.5" r="2.4" opacity="0.7" />
+      <path d="M2.5 20c0-3.7 2.8-5.8 6-5.8s6 2.1 6 5.8a1 1 0 01-1 1h-10a1 1 0 01-1-1z" />
+      <path d="M14 14.5c.4-.1.7-.1 1.1-.1 2.4 0 4.9 1.8 4.9 5a1 1 0 01-1 1h-2.6" opacity="0.7" />
+    </Svg>
   );
 }
 

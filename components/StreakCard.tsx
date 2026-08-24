@@ -8,6 +8,7 @@ import {
   getMilestoneWindow,
 } from "@/lib/types";
 import { updateWeeklyGoal, buyStreakFreeze, getMemberCheckinDays } from "@/lib/memberStore";
+import { getHabitMilestoneStatus } from "@/lib/habitMilestones";
 import { IconStreak, IconFreeze, IconTrophy, IconLock, IconBadge } from "@/components/icons";
 
 const CALENDAR_WEEKS = 6;
@@ -90,17 +91,34 @@ export default function StreakCard({
   const todayStr = new Date().toISOString().slice(0, 10);
   const goalMet = member.currentWeekSessions >= member.weeklyGoalDays;
   const monthLabel = new Date().toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+  const goalMetThisWeek = member.currentWeekSessions >= member.weeklyGoalDays;
 
   return (
-    <div className="rounded-lg border border-podium-gold/30 bg-podium-gold/5 p-5 mb-8 shadow-[0_1px_3px_rgba(27,27,31,0.06)]">
+    <div
+      className="rounded-2xl p-5 mb-8 shadow-[0_4px_20px_rgba(201,162,39,0.12)]"
+      style={{
+        background: "linear-gradient(160deg, rgba(201,162,39,0.10), rgba(201,162,39,0.02))",
+        border: "1px solid rgba(201,162,39,0.25)",
+      }}
+    >
       <div className="flex items-center justify-between mb-4">
         <p className="font-mono text-[11px] uppercase tracking-widest text-podium-gold flex items-center gap-2">
           <IconBadge icon={IconStreak} tone="gold" size="sm" />
           Racha
         </p>
-        <div className="flex items-center gap-3">
-          <span className="font-display text-2xl tabular">{member.racha}</span>
-          <span className="font-mono text-[10px] text-podium-asphalt/50">semanas</span>
+        <div className="flex items-center gap-2">
+          <span
+            className={`font-display text-4xl tabular leading-none ${goalMetThisWeek ? "animate-pulse" : ""}`}
+            style={{
+              background: "linear-gradient(135deg, #c9a227, #8fd400)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            {member.racha}
+          </span>
+          <span className="font-mono text-[10px] text-podium-asphalt/50 mb-1">semanas</span>
         </div>
       </div>
 
@@ -113,10 +131,10 @@ export default function StreakCard({
           <button
             key={d}
             onClick={() => handleGoalChange(d)}
-            className={`w-9 h-9 rounded-md font-mono text-xs tabular transition-colors ${
+            className={`w-9 h-9 rounded-xl font-mono text-xs tabular transition-all ${
               member.weeklyGoalDays === d
-                ? "bg-podium-gold text-podium-asphalt"
-                : "border border-podium-asphalt/20 hover:border-podium-gold"
+                ? "bg-podium-gold text-podium-asphalt scale-110 shadow-[0_2px_8px_rgba(201,162,39,0.4)]"
+                : "border border-podium-asphalt/20 hover:border-podium-gold hover:scale-105"
             }`}
           >
             {d}
@@ -133,7 +151,7 @@ export default function StreakCard({
       </p>
 
       {/* Congelador de racha */}
-      <div className="flex items-center justify-between rounded-md bg-white/60 border border-podium-asphalt/10 px-3 py-2 mb-4">
+      <div className="flex items-center justify-between rounded-xl bg-white/70 border border-podium-asphalt/10 px-3 py-2.5 mb-4">
         <p className="text-xs text-podium-asphalt/70 flex items-center gap-2">
           <IconFreeze className="w-4 h-4 shrink-0" />
           Congeladores: <span className="font-semibold">{member.streakFreezes}</span> —
@@ -142,7 +160,7 @@ export default function StreakCard({
         <button
           onClick={handleBuyFreeze}
           disabled={buying || member.xpTotal < STREAK_FREEZE_COST_XP}
-          className="shrink-0 font-mono text-[10px] uppercase tracking-widest bg-podium-asphalt text-podium-chalk disabled:opacity-30 disabled:cursor-not-allowed rounded-md px-3 py-1.5"
+          className="shrink-0 font-mono text-[10px] uppercase tracking-widest bg-podium-asphalt text-podium-chalk disabled:opacity-30 disabled:cursor-not-allowed rounded-full px-3.5 py-1.5 hover:scale-105 transition-transform"
         >
           {buying ? "…" : `${STREAK_FREEZE_COST_XP} XP`}
         </button>
@@ -175,9 +193,9 @@ export default function StreakCard({
                 <div
                   key={day.date}
                   title={day.date}
-                  className={`aspect-square rounded-md flex items-center justify-center text-[11px] font-mono ${
+                  className={`aspect-square rounded-lg flex items-center justify-center text-[11px] font-mono transition-transform ${
                     trained
-                      ? "bg-podium-gold/20"
+                      ? "bg-podium-gold/20 scale-100"
                       : "bg-podium-asphalt/5"
                   } ${isToday ? "ring-2 ring-podium-gold" : ""} ${
                     day.inCurrentMonth ? "text-podium-asphalt/70" : "text-podium-asphalt/25"
@@ -194,6 +212,10 @@ export default function StreakCard({
         <IconStreak className="w-3 h-3 text-podium-gold" /> = día con sesión válida registrada
       </p>
 
+      {/* Hitos de constancia — basados en investigación real, no en
+          días consecutivos (por eso usan la racha semanal) */}
+      <HabitMilestoneSection racha={member.racha} />
+
       {/* Logros personales */}
       <p className="font-mono text-[10px] uppercase tracking-widest text-podium-asphalt/50 mt-5 mb-1">
         Logros — sesiones totales entrenadas
@@ -204,7 +226,7 @@ export default function StreakCard({
           return (
             <div
               key={milestone}
-              className={`flex flex-col items-center justify-center w-16 h-16 rounded-md ${
+              className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-transform hover:scale-105 ${
                 unlocked
                   ? "bg-podium-mint/15 border border-podium-mint/40 text-podium-mint"
                   : "bg-podium-asphalt/5 border border-podium-asphalt/10 text-podium-asphalt/30"
@@ -225,6 +247,41 @@ export default function StreakCard({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function HabitMilestoneSection({ racha }: { racha: number }) {
+  const { current, next } = getHabitMilestoneStatus(racha);
+
+  return (
+    <div className="mt-5">
+      <p className="font-mono text-[10px] uppercase tracking-widest text-podium-asphalt/50 mb-2">
+        Hitos de constancia — basados en investigación real
+      </p>
+
+      {current ? (
+        <div className="rounded-xl border border-podium-mint/40 bg-podium-mint/10 p-4 mb-2 shadow-[0_2px_10px_rgba(47,184,138,0.12)]">
+          <div className="flex items-center gap-2 mb-1.5">
+            <IconTrophy className="w-4 h-4 text-podium-mint shrink-0" />
+            <p className="font-display text-base uppercase leading-none">{current.title}</p>
+          </div>
+          <p className="text-xs text-podium-asphalt/70 leading-relaxed">{current.fact}</p>
+        </div>
+      ) : (
+        <p className="font-mono text-xs text-podium-asphalt/40 text-center py-4 border border-dashed border-podium-asphalt/15 rounded-md mb-2">
+          Completa tu primera semana de racha para desbloquear el primer hito.
+        </p>
+      )}
+
+      {next && (
+        <div className="flex items-center gap-2 rounded-xl bg-podium-asphalt/5 px-3 py-2.5">
+          <IconLock className="w-3.5 h-3.5 text-podium-asphalt/30 shrink-0" />
+          <p className="font-mono text-[10px] text-podium-asphalt/40">
+            Siguiente hito en {next.weeks - racha} semana{next.weeks - racha === 1 ? "" : "s"} — &quot;{next.title}&quot;
+          </p>
+        </div>
+      )}
     </div>
   );
 }

@@ -65,7 +65,7 @@ function LoginContent() {
           <button
             onClick={handleSubmit}
             disabled={!username || !password}
-            className="mt-1 bg-podium-track hover:bg-podium-track-dark disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded-md py-4 font-display text-xl uppercase tracking-wide text-podium-asphalt"
+            className="mt-1 bg-podium-track hover:bg-podium-track-dark disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all rounded-xl py-4 font-display text-xl uppercase tracking-wide text-podium-asphalt hover:scale-[1.02] hover:shadow-[0_6px_20px_rgba(143,212,0,0.3)]"
           >
             Entrar
           </button>

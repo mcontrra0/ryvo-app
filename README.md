@@ -1,6 +1,102 @@
-# Ryvo — MVP (logros de racha: exponenciales, sin límite)
+# Ryvo — MVP (tercer pase de diseño — más profundidad y vida)
 
-## Qué cambió en esta vuelta
+## Qué cambié en esta vuelta
+
+- **Radios más generosos** (rounded-xl/2xl en vez de rounded-md/lg) en
+  las tarjetas principales de `/mi-ranking`, `StreakCard`, `/dashboard`
+  — es lo que hace que se sienta "app moderna" en vez de "formulario".
+- **Números clave con degradado sutil, no color plano** — puesto y XP
+  total en `/mi-ranking`, la racha en `StreakCard`, y el momento más
+  importante de toda la app: el "+XP" al validar una sesión en el
+  fichaje, ahora más grande y con degradado dorado→lima en vez de un
+  color sólido.
+- **Animaciones con más vida** — la llama de racha pulsa cuando ya
+  cumpliste el objetivo esa semana, el número de XP al fichar salida
+  tiene una pequeña animación de aparición, y hay `hover:scale` en
+  tarjetas y botones clave (antes solo cambiaban de color).
+- Seguimos usando degradados/sombras directamente en Tailwind — la
+  restricción de "sin gradientes/glow" era solo para la herramienta de
+  bocetos rápidos (Visualizer), no para el código real de la app.
+
+- **Hitos de constancia en la pestaña Racha** (`lib/habitMilestones.ts`)
+  — 21 hitos atados a la **racha semanal**, no a días consecutivos (a
+  propósito: reintroducir "días seguidos" habría chocado con el
+  rediseño de racha semanal que ya hicimos, y la investigación real
+  sobre hábitos también se mide en semanas/meses). Cada hito trae un
+  dato **verificado de verdad** — nada de cifras inventadas tipo
+  "aumenta la serotonina un X%":
+  - Semanas 1-10, una por semana: adaptación neuromuscular temprana,
+    eficiencia cardiovascular, el estudio de 2015 sobre el umbral real
+    para formar el hábito de ir al gimnasio (4×/semana durante 6
+    semanas), y los **66 días de media** que de verdad tarda un hábito
+    en formarse (Lally et al. 2010, University College London) — no
+    los 21 días del mito, que nunca tuvo base científica.
+  - A partir de ahí, el ritmo baja (cada 2 semanas hasta el medio año,
+    luego cada mes) — mejoras de VO2 máx./umbral de lactato hacia el
+    mes 3, y en el hito de 1 año, el dato verificado de que Michael
+    Phelps pasó más de 5 años seguidos sin faltar un solo día a
+    entrenar.
+  - Se muestra el hito ya conseguido más reciente (con su dato) y el
+    siguiente asomando bloqueado — no la lista entera de golpe.
+
+- **Arreglado `IconStreak`** — el trazo de la llama era demasiado
+  complejo para tamaños pequeños y se deformaba (se veía como una
+  comilla rota junto al "6" de racha en la landing). Sustituido por un
+  trazo más simple que aguanta bien en miniatura.
+- **Dos vistas previas ilustrativas nuevas** en "Cómo funciona" — una
+  del Radar de Riesgo (semáforo de socios) junto a esa tarjeta, y un
+  podio de ranking junto a la de Premios. Mismo criterio que la
+  primera: reconstruidas con nuestros propios colores y componentes,
+  no capturas reales.
+- ⚠️ **Las capturas reales de la app siguen pendientes** — mi entorno
+  no tiene acceso a `vercel.app` ni `supabase.co`, así que no puedo
+  capturarlas yo mismo. En cuanto me pases pantallazos de verdad, los
+  sustituyo por fotos reales de la app en vez de estas ilustraciones.
+
+- **De una tarifa única a tres** (Básico 49€, Premium 69€, Pro 99€) en
+  la landing. La oferta de fundador ya no es "todos pagan 49€" — ahora
+  es **"los primeros gimnasios se llevan Premium al precio de Básico"**,
+  con el precio original tachado y una insignia "Precio fundador"
+  destacando la tarjeta del medio.
+- ⚠️ **Esto es solo la landing (marketing), no hay gating real en el
+  código.** El software no distingue todavía entre tarifas — cualquier
+  gimnasio tiene acceso a todo lo construido, sin importar qué tarifa
+  se le prometa. Construir el bloqueo de funciones por tarifa sería un
+  proyecto aparte; para un piloto de un solo gimnasio no hace falta
+  todavía.
+
+- **Quitada la afirmación "0€ de integración con tu software actual"**
+  — no tenía sentido, no existe integración con otros sistemas. La
+  sección "El problema" pasa de 3 a 2 estadísticas, ambas reales.
+- **Hero con profundidad y prueba visual concreta** — degradado radial
+  sutil de fondo (antes plano), y una tarjeta que enseña "así lo ve tu
+  socio" (racha, XP, progreso hacia un premio) con el mismo lenguaje
+  visual real de la app, para que la promesa se vea tangible en vez de
+  solo texto.
+- **"Cómo funciona" con tarjetas de verdad** — cada punto era una fila
+  de texto suelta; ahora son tarjetas elevadas con sombra y un ligero
+  efecto al pasar el ratón, sobre una sección con fondo ligeramente
+  distinto para dar ritmo entre secciones.
+- **Botones con hover más premium** en toda la landing (leve elevación
+  + sombra de color al pasar el ratón) — antes solo cambiaba el color.
+
+- **Nueva pestaña "Equipo" en `/mi-ranking`.** Grupos cerrados de 2 a 4
+  socios, creados por ellos mismos (un socio solo puede estar en uno a
+  la vez). Se une por código o enlace de invitación
+  (`/mi-ranking?join=CÓDIGO`, se abre directo en la pestaña correcta y
+  precarga el código).
+  - **Sin "puntuación de grupo" que castigue** — cada socio conserva su
+    propio XP y objetivo semanal intactos. El equipo solo hace visible
+    el estado de cada uno frente a SU propio objetivo esta semana
+    ("Marco: 2/2 ✓ · Sara: 0/2"), para dar el empujón social sin que
+    nadie "arrastre hacia abajo" el número de otro.
+  - **Ranking de equipos** — ordenado por la SUMA de XP de sus
+    miembros (nunca resta un miembro flojo, solo suma menos).
+  - Tablas nuevas: `teams`, `team_members` (`lib/teamStore.ts`).
+  - ⚠️ Límite conocido: si alguien abre el enlace de invitación sin
+    estar registrado todavía, el código no sobrevive al paso de
+    registro — tendría que pedir el código de nuevo después. Aceptable
+    para esta versión, pero queda anotado.
 
 - **Logros por sesiones totales, arreglados dos veces en la misma
   vuelta.** Primero: el "10 sesiones" solo se explicaba en un `title`

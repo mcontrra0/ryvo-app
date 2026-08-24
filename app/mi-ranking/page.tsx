@@ -16,13 +16,15 @@ import {
 } from "@/lib/memberStore";
 import Logo from "@/components/Logo";
 import StreakCard from "@/components/StreakCard";
-import { IconOverview, IconStreak, IconTrophy, IconPodium, IconLock, IconSun, IconBadge } from "@/components/icons";
+import TeamCard from "@/components/TeamCard";
+import { IconOverview, IconStreak, IconTrophy, IconPodium, IconLock, IconSun, IconTeam, IconBadge } from "@/components/icons";
 
-type Tab = "overview" | "racha" | "premios" | "ranking";
+type Tab = "overview" | "racha" | "equipo" | "premios" | "ranking";
 
 const TABS: { id: Tab; label: string; Icon: typeof IconOverview }[] = [
   { id: "overview", label: "Resumen", Icon: IconOverview },
   { id: "racha", label: "Racha", Icon: IconStreak },
+  { id: "equipo", label: "Equipo", Icon: IconTeam },
   { id: "premios", label: "Premios", Icon: IconTrophy },
   { id: "ranking", label: "Ranking", Icon: IconPodium },
 ];
@@ -99,6 +101,9 @@ function MiRankingInner() {
   const [claimMsg, setClaimMsg] = useState<string | null>(null);
 
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).has("join")) {
+      setTab("equipo");
+    }
     (async () => {
       const m = await getDeviceMember();
       setMe(m);
@@ -227,19 +232,39 @@ function MiRankingInner() {
             )}
 
             {/* Tarjeta de perfil */}
-            <div className="rounded-lg border border-podium-asphalt/15 bg-white p-6 mb-6 text-center shadow-[0_1px_3px_rgba(27,27,31,0.06)]">
+            <div className="rounded-2xl border border-podium-asphalt/15 bg-white p-6 mb-6 text-center shadow-[0_4px_16px_rgba(27,27,31,0.08)]">
               <p className="font-display text-2xl uppercase">{me.fullName}</p>
               <p className="font-mono text-xs text-podium-asphalt/50 mb-4">{me.memberCode}</p>
 
               <div className="flex justify-center gap-8 mb-5">
                 <div>
-                  <p className="font-display text-3xl tabular text-podium-gold">#{myPosition || "–"}</p>
+                  <p
+                    className="font-display text-4xl tabular"
+                    style={{
+                      background: "linear-gradient(135deg, #c9a227, #e8c85a)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                    }}
+                  >
+                    #{myPosition || "–"}
+                  </p>
                   <p className="font-mono text-[10px] uppercase tracking-widest text-podium-asphalt/50">
                     Puesto
                   </p>
                 </div>
                 <div>
-                  <p className="font-display text-3xl tabular">{me.xpTotal}</p>
+                  <p
+                    className="font-display text-4xl tabular"
+                    style={{
+                      background: "linear-gradient(135deg, #1b1b1f, #6ea300)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                    }}
+                  >
+                    {me.xpTotal}
+                  </p>
                   <p className="font-mono text-[10px] uppercase tracking-widest text-podium-asphalt/50">
                     XP total
                   </p>
@@ -284,6 +309,8 @@ function MiRankingInner() {
 
         {tab === "racha" && <StreakCard member={me} onMemberUpdate={setMe} />}
 
+        {tab === "equipo" && <TeamCard memberId={me.id} />}
+
         {tab === "premios" && (
           <div className="flex flex-col gap-2">
             {rewards.length === 0 && (
@@ -299,7 +326,7 @@ function MiRankingInner() {
               return (
                 <div
                   key={r.id}
-                  className={`flex items-center justify-between rounded-md border px-4 py-3 ${
+                  className={`flex items-center justify-between rounded-xl border px-4 py-3 transition-transform hover:scale-[1.01] ${
                     unlocked
                       ? "border-podium-mint/40 bg-podium-mint/10"
                       : "border-podium-asphalt/15 bg-podium-asphalt/5"
@@ -380,7 +407,7 @@ function RankRow({ position, member, isMe }: { position: number; member: Member;
       : null;
   return (
     <div
-      className={`flex items-center justify-between rounded-md px-4 py-2.5 ${
+      className={`flex items-center justify-between rounded-xl px-4 py-2.5 transition-transform hover:scale-[1.01] ${
         isMe ? "bg-podium-gold/15 border border-podium-gold/40" : "bg-podium-asphalt/5"
       }`}
     >
