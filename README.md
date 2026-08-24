@@ -1,6 +1,22 @@
-# Ryvo — MVP (hitos de constancia con datos reales, no inventados)
+# Ryvo — MVP (tercer pase de diseño — más profundidad y vida)
 
 ## Qué cambié en esta vuelta
+
+- **Radios más generosos** (rounded-xl/2xl en vez de rounded-md/lg) en
+  las tarjetas principales de `/mi-ranking`, `StreakCard`, `/dashboard`
+  — es lo que hace que se sienta "app moderna" en vez de "formulario".
+- **Números clave con degradado sutil, no color plano** — puesto y XP
+  total en `/mi-ranking`, la racha en `StreakCard`, y el momento más
+  importante de toda la app: el "+XP" al validar una sesión en el
+  fichaje, ahora más grande y con degradado dorado→lima en vez de un
+  color sólido.
+- **Animaciones con más vida** — la llama de racha pulsa cuando ya
+  cumpliste el objetivo esa semana, el número de XP al fichar salida
+  tiene una pequeña animación de aparición, y hay `hover:scale` en
+  tarjetas y botones clave (antes solo cambiaban de color).
+- Seguimos usando degradados/sombras directamente en Tailwind — la
+  restricción de "sin gradientes/glow" era solo para la herramienta de
+  bocetos rápidos (Visualizer), no para el código real de la app.
 
 - **Hitos de constancia en la pestaña Racha** (`lib/habitMilestones.ts`)
   — 21 hitos atados a la **racha semanal**, no a días consecutivos (a

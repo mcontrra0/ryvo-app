@@ -469,7 +469,7 @@ function KpiCard({
   trend?: number;
 }) {
   return (
-    <div className="rounded-md border border-podium-asphalt/10 bg-white px-4 py-4 text-center shadow-[0_1px_3px_rgba(27,27,31,0.06)]">
+    <div className="rounded-2xl border border-podium-asphalt/10 bg-white px-4 py-4 text-center shadow-[0_2px_10px_rgba(27,27,31,0.07)] transition-transform hover:scale-[1.02]">
       <div className="flex justify-center mb-2">
         <IconBadge icon={icon} tone={tone} />
       </div>
@@ -503,7 +503,7 @@ function SummaryCard({
   emoji: string;
 }) {
   return (
-    <div className="rounded-md border border-podium-asphalt/10 bg-white px-4 py-4 text-center shadow-[0_1px_3px_rgba(27,27,31,0.06)]">
+    <div className="rounded-2xl border border-podium-asphalt/10 bg-white px-4 py-4 text-center shadow-[0_2px_10px_rgba(27,27,31,0.07)] transition-transform hover:scale-[1.02]">
       <p className="text-xl mb-1">{emoji}</p>
       <p className="font-display text-3xl tabular">{value}</p>
       <p className="font-mono text-[10px] uppercase tracking-widest text-podium-asphalt/50">
