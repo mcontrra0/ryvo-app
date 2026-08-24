@@ -1,6 +1,21 @@
-# Ryvo — MVP (Equipos: grupos de 2-4 con responsabilidad social)
+# Ryvo — MVP (rediseño de la landing)
 
-## Qué cambió en esta vuelta
+## Qué cambié en esta vuelta
+
+- **Quitada la afirmación "0€ de integración con tu software actual"**
+  — no tenía sentido, no existe integración con otros sistemas. La
+  sección "El problema" pasa de 3 a 2 estadísticas, ambas reales.
+- **Hero con profundidad y prueba visual concreta** — degradado radial
+  sutil de fondo (antes plano), y una tarjeta que enseña "así lo ve tu
+  socio" (racha, XP, progreso hacia un premio) con el mismo lenguaje
+  visual real de la app, para que la promesa se vea tangible en vez de
+  solo texto.
+- **"Cómo funciona" con tarjetas de verdad** — cada punto era una fila
+  de texto suelta; ahora son tarjetas elevadas con sombra y un ligero
+  efecto al pasar el ratón, sobre una sección con fondo ligeramente
+  distinto para dar ritmo entre secciones.
+- **Botones con hover más premium** en toda la landing (leve elevación
+  + sombra de color al pasar el ratón) — antes solo cambiaba el color.
 
 - **Nueva pestaña "Equipo" en `/mi-ranking`.** Grupos cerrados de 2 a 4
   socios, creados por ellos mismos (un socio solo puede estar en uno a

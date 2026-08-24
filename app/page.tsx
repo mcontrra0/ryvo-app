@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
-import { IconTap, IconShield, IconTrophy, IconSun, IconBadge } from "@/components/icons";
+import { IconTap, IconShield, IconTrophy, IconSun, IconStreak, IconBadge } from "@/components/icons";
 
 export default function LandingPage() {
   return (
@@ -11,8 +11,15 @@ export default function LandingPage() {
       </div>
 
       {/* HERO */}
-      <section className="bg-podium-asphalt text-podium-chalk px-6 pt-14 pb-24">
-        <div className="max-w-3xl mx-auto text-center">
+      <section className="relative bg-podium-asphalt text-podium-chalk px-6 pt-14 pb-24 overflow-hidden">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(143,212,0,0.14), transparent)",
+          }}
+        />
+        <div className="relative max-w-3xl mx-auto text-center">
           <Logo size="lg" tone="dark" className="justify-center mb-10" />
           <p className="font-mono text-xs tracking-[0.3em] uppercase text-podium-chalk/50 mb-5">
             Para gimnasios y boxes independientes
@@ -27,19 +34,43 @@ export default function LandingPage() {
             — antes de que pase — y convierte cada entrenamiento en un
             juego con premios reales, sin cambiar el software que ya usas.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-16">
             <Link
               href="/login"
-              className="bg-podium-track hover:bg-podium-track-dark transition-colors rounded-md px-8 py-4 font-display text-xl uppercase tracking-wide text-podium-asphalt"
+              className="bg-podium-track hover:bg-podium-track-dark hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(143,212,0,0.25)] transition-all rounded-md px-8 py-4 font-display text-xl uppercase tracking-wide text-podium-asphalt"
             >
               Ver la demo
             </Link>
             <a
               href="mailto:hola@ryvo.app"
-              className="border border-podium-chalk/30 hover:border-podium-chalk/60 transition-colors rounded-md px-8 py-4 font-display text-xl uppercase tracking-wide"
+              className="border border-podium-chalk/30 hover:border-podium-chalk/60 hover:-translate-y-0.5 transition-all rounded-md px-8 py-4 font-display text-xl uppercase tracking-wide"
             >
               Hablar con nosotros
             </a>
+          </div>
+
+          {/* Vista previa real de la interfaz — para que la promesa se
+              vea concreta, no solo una frase */}
+          <div className="rounded-xl border border-podium-chalk/10 bg-podium-chalk text-podium-asphalt shadow-[0_20px_50px_rgba(0,0,0,0.35)] p-6 max-w-sm mx-auto text-left">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-podium-asphalt/40 mb-4">
+              Así lo ve tu socio
+            </p>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="font-display text-xl uppercase leading-none">Socio de ejemplo</p>
+                <p className="font-mono text-[10px] text-podium-asphalt/40 mt-1">#3 del ranking</p>
+              </div>
+              <div className="flex items-center gap-1.5 text-podium-gold shrink-0">
+                <IconStreak className="w-5 h-5" />
+                <span className="font-display text-2xl tabular">6</span>
+              </div>
+            </div>
+            <div className="h-2 rounded-full bg-podium-asphalt/10 overflow-hidden mb-2">
+              <div className="h-full bg-podium-track rounded-full" style={{ width: "70%" }} />
+            </div>
+            <p className="font-mono text-[10px] text-podium-asphalt/50">
+              1.240 / 1.750 XP hacia &quot;Mes gratis&quot;
+            </p>
           </div>
         </div>
       </section>
@@ -55,10 +86,9 @@ export default function LandingPage() {
             <br />
             se da de baja en los primeros 6 meses
           </h2>
-          <div className="grid sm:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 gap-6">
             <StatCard value="30-50%" label="Churn en los primeros 6 meses" />
             <StatCard value="1 socio" label="Retenido al mes ya paga la herramienta" />
-            <StatCard value="0€" label="De integración con tu software actual" />
           </div>
         </div>
       </section>
@@ -66,7 +96,7 @@ export default function LandingPage() {
       <div className="lane-divider max-w-3xl mx-auto" />
 
       {/* LA SOLUCIÓN */}
-      <section className="px-6 py-20">
+      <section className="px-6 py-20 bg-podium-asphalt/[0.025]">
         <div className="max-w-3xl mx-auto">
           <p className="font-mono text-xs tracking-[0.3em] uppercase text-podium-asphalt/40 mb-4 text-center">
             Cómo funciona
@@ -115,7 +145,7 @@ export default function LandingPage() {
           <h2 className="font-display text-4xl uppercase tracking-tight mb-8">
             Precio fundador
           </h2>
-          <div className="rounded-lg border border-podium-asphalt/15 p-8">
+          <div className="rounded-lg border border-podium-asphalt/15 bg-white p-8 shadow-[0_4px_16px_rgba(27,27,31,0.08)]">
             <p className="font-display text-6xl tabular mb-1">49€</p>
             <p className="font-mono text-xs uppercase tracking-widest text-podium-asphalt/50 mb-6">
               / mes · congelado de por vida para los primeros gimnasios
@@ -128,7 +158,7 @@ export default function LandingPage() {
             </ul>
             <Link
               href="/login"
-              className="block bg-podium-track hover:bg-podium-track-dark transition-colors rounded-md py-4 font-display text-lg uppercase tracking-wide text-podium-asphalt"
+              className="block bg-podium-track hover:bg-podium-track-dark hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(143,212,0,0.3)] transition-all rounded-md py-4 font-display text-lg uppercase tracking-wide text-podium-asphalt"
             >
               Empezar el piloto gratis
             </Link>
@@ -147,7 +177,7 @@ export default function LandingPage() {
 
 function StatCard({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-lg border border-podium-asphalt/15 p-6 text-center">
+    <div className="rounded-lg border border-podium-asphalt/15 bg-white p-6 text-center shadow-[0_1px_3px_rgba(27,27,31,0.06)]">
       <p className="font-display text-4xl tabular text-podium-track-dark mb-2">{value}</p>
       <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50">
         {label}
@@ -168,14 +198,16 @@ function FeatureRow({
   desc: string;
 }) {
   return (
-    <div className="grid sm:grid-cols-[140px_1fr] gap-2 sm:gap-8">
-      <div className="flex sm:flex-col items-center sm:items-start gap-2 sm:gap-3">
-        <IconBadge icon={Icon} tone="track" />
-        <p className="font-mono text-xs uppercase tracking-widest text-podium-track-dark">{tag}</p>
-      </div>
-      <div>
-        <h3 className="font-display text-2xl uppercase tracking-tight mb-2">{title}</h3>
-        <p className="text-podium-asphalt/60 leading-relaxed">{desc}</p>
+    <div className="rounded-xl border border-podium-asphalt/10 bg-white p-6 sm:p-8 shadow-[0_1px_3px_rgba(27,27,31,0.06)] hover:shadow-[0_8px_20px_rgba(27,27,31,0.08)] hover:-translate-y-0.5 transition-all">
+      <div className="grid sm:grid-cols-[140px_1fr] gap-3 sm:gap-8">
+        <div className="flex sm:flex-col items-center sm:items-start gap-2 sm:gap-3">
+          <IconBadge icon={Icon} tone="track" />
+          <p className="font-mono text-xs uppercase tracking-widest text-podium-track-dark">{tag}</p>
+        </div>
+        <div>
+          <h3 className="font-display text-2xl uppercase tracking-tight mb-2">{title}</h3>
+          <p className="text-podium-asphalt/60 leading-relaxed">{desc}</p>
+        </div>
       </div>
     </div>
   );
