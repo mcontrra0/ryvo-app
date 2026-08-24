@@ -1,6 +1,27 @@
-# Ryvo — MVP (arregla icono de racha, más vistas previas en la landing)
+# Ryvo — MVP (hitos de constancia con datos reales, no inventados)
 
 ## Qué cambié en esta vuelta
+
+- **Hitos de constancia en la pestaña Racha** (`lib/habitMilestones.ts`)
+  — 21 hitos atados a la **racha semanal**, no a días consecutivos (a
+  propósito: reintroducir "días seguidos" habría chocado con el
+  rediseño de racha semanal que ya hicimos, y la investigación real
+  sobre hábitos también se mide en semanas/meses). Cada hito trae un
+  dato **verificado de verdad** — nada de cifras inventadas tipo
+  "aumenta la serotonina un X%":
+  - Semanas 1-10, una por semana: adaptación neuromuscular temprana,
+    eficiencia cardiovascular, el estudio de 2015 sobre el umbral real
+    para formar el hábito de ir al gimnasio (4×/semana durante 6
+    semanas), y los **66 días de media** que de verdad tarda un hábito
+    en formarse (Lally et al. 2010, University College London) — no
+    los 21 días del mito, que nunca tuvo base científica.
+  - A partir de ahí, el ritmo baja (cada 2 semanas hasta el medio año,
+    luego cada mes) — mejoras de VO2 máx./umbral de lactato hacia el
+    mes 3, y en el hito de 1 año, el dato verificado de que Michael
+    Phelps pasó más de 5 años seguidos sin faltar un solo día a
+    entrenar.
+  - Se muestra el hito ya conseguido más reciente (con su dato) y el
+    siguiente asomando bloqueado — no la lista entera de golpe.
 
 - **Arreglado `IconStreak`** — el trazo de la llama era demasiado
   complejo para tamaños pequeños y se deformaba (se veía como una

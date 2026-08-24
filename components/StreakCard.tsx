@@ -8,6 +8,7 @@ import {
   getMilestoneWindow,
 } from "@/lib/types";
 import { updateWeeklyGoal, buyStreakFreeze, getMemberCheckinDays } from "@/lib/memberStore";
+import { getHabitMilestoneStatus } from "@/lib/habitMilestones";
 import { IconStreak, IconFreeze, IconTrophy, IconLock, IconBadge } from "@/components/icons";
 
 const CALENDAR_WEEKS = 6;
@@ -194,6 +195,10 @@ export default function StreakCard({
         <IconStreak className="w-3 h-3 text-podium-gold" /> = día con sesión válida registrada
       </p>
 
+      {/* Hitos de constancia — basados en investigación real, no en
+          días consecutivos (por eso usan la racha semanal) */}
+      <HabitMilestoneSection racha={member.racha} />
+
       {/* Logros personales */}
       <p className="font-mono text-[10px] uppercase tracking-widest text-podium-asphalt/50 mt-5 mb-1">
         Logros — sesiones totales entrenadas
@@ -225,6 +230,41 @@ export default function StreakCard({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function HabitMilestoneSection({ racha }: { racha: number }) {
+  const { current, next } = getHabitMilestoneStatus(racha);
+
+  return (
+    <div className="mt-5">
+      <p className="font-mono text-[10px] uppercase tracking-widest text-podium-asphalt/50 mb-2">
+        Hitos de constancia — basados en investigación real
+      </p>
+
+      {current ? (
+        <div className="rounded-md border border-podium-mint/40 bg-podium-mint/10 p-4 mb-2">
+          <div className="flex items-center gap-2 mb-1.5">
+            <IconTrophy className="w-4 h-4 text-podium-mint shrink-0" />
+            <p className="font-display text-base uppercase leading-none">{current.title}</p>
+          </div>
+          <p className="text-xs text-podium-asphalt/70 leading-relaxed">{current.fact}</p>
+        </div>
+      ) : (
+        <p className="font-mono text-xs text-podium-asphalt/40 text-center py-4 border border-dashed border-podium-asphalt/15 rounded-md mb-2">
+          Completa tu primera semana de racha para desbloquear el primer hito.
+        </p>
+      )}
+
+      {next && (
+        <div className="flex items-center gap-2 rounded-md bg-podium-asphalt/5 px-3 py-2">
+          <IconLock className="w-3.5 h-3.5 text-podium-asphalt/30 shrink-0" />
+          <p className="font-mono text-[10px] text-podium-asphalt/40">
+            Siguiente hito en {next.weeks - racha} semana{next.weeks - racha === 1 ? "" : "s"} — &quot;{next.title}&quot;
+          </p>
+        </div>
+      )}
     </div>
   );
 }
