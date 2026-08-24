@@ -138,31 +138,61 @@ export default function LandingPage() {
 
       {/* PRECIO */}
       <section className="px-6 py-20">
-        <div className="max-w-md mx-auto text-center">
-          <p className="font-mono text-xs tracking-[0.3em] uppercase text-podium-asphalt/40 mb-4">
+        <div className="max-w-5xl mx-auto">
+          <p className="font-mono text-xs tracking-[0.3em] uppercase text-podium-asphalt/40 mb-4 text-center">
             Precio
           </p>
-          <h2 className="font-display text-4xl uppercase tracking-tight mb-8">
-            Precio fundador
+          <h2 className="font-display text-4xl uppercase tracking-tight text-center mb-4">
+            Tres tarifas, sin permanencia
           </h2>
-          <div className="rounded-lg border border-podium-asphalt/15 bg-white p-8 shadow-[0_4px_16px_rgba(27,27,31,0.08)]">
-            <p className="font-display text-6xl tabular mb-1">49€</p>
-            <p className="font-mono text-xs uppercase tracking-widest text-podium-asphalt/50 mb-6">
-              / mes · congelado de por vida para los primeros gimnasios
-            </p>
-            <ul className="text-sm text-podium-asphalt/70 flex flex-col gap-2 mb-8 text-left">
-              <li>✓ Placa NFC de entrada incluida</li>
-              <li>✓ Radar de riesgo semanal</li>
-              <li>✓ Ranking y premios ilimitados</li>
-              <li>✓ Sin permanencia</li>
-            </ul>
-            <Link
-              href="/login"
-              className="block bg-podium-track hover:bg-podium-track-dark hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(143,212,0,0.3)] transition-all rounded-md py-4 font-display text-lg uppercase tracking-wide text-podium-asphalt"
-            >
-              Empezar el piloto gratis
-            </Link>
+          <p className="text-podium-asphalt/60 text-center max-w-xl mx-auto mb-14">
+            Como fundador entre los primeros gimnasios, te llevas la tarifa{" "}
+            <span className="font-semibold text-podium-asphalt">Premium</span> al
+            precio de la <span className="font-semibold text-podium-asphalt">Básica</span> —
+            congelado de por vida, no es un descuento de lanzamiento que suba luego.
+          </p>
+
+          <div className="grid sm:grid-cols-3 gap-6 items-start">
+            <PricingCard
+              name="Básico"
+              price="49€"
+              features={[
+                "Fichaje NFC ilimitado",
+                "Radar de Riesgo semanal",
+                "Ranking y racha individual",
+                "Hasta 5 premios activos",
+                "App para socios",
+              ]}
+            />
+            <PricingCard
+              name="Premium"
+              price="49€"
+              originalPrice="69€"
+              badge="Precio fundador"
+              highlighted
+              features={[
+                "Todo lo de Básico",
+                "Premios ilimitados",
+                "Horas valle (bonus de XP)",
+                "Equipos de 2-4 socios",
+                "Pantalla TV para la sala",
+              ]}
+            />
+            <PricingCard
+              name="Pro"
+              price="99€"
+              features={[
+                "Todo lo de Premium",
+                "Analítica avanzada del dashboard",
+                "Soporte prioritario",
+                "Onboarding personalizado",
+              ]}
+            />
           </div>
+
+          <p className="font-mono text-[11px] text-podium-asphalt/40 text-center mt-8">
+            Placa NFC de entrada incluida en las tres tarifas · sin permanencia
+          </p>
         </div>
       </section>
 
@@ -182,6 +212,65 @@ function StatCard({ value, label }: { value: string; label: string }) {
       <p className="font-mono text-[11px] uppercase tracking-widest text-podium-asphalt/50">
         {label}
       </p>
+    </div>
+  );
+}
+
+function PricingCard({
+  name,
+  price,
+  originalPrice,
+  badge,
+  highlighted,
+  features,
+}: {
+  name: string;
+  price: string;
+  originalPrice?: string;
+  badge?: string;
+  highlighted?: boolean;
+  features: string[];
+}) {
+  return (
+    <div
+      className={`rounded-lg p-7 flex flex-col h-full transition-all ${
+        highlighted
+          ? "border-2 border-podium-track bg-white shadow-[0_8px_28px_rgba(143,212,0,0.18)] sm:-translate-y-3"
+          : "border border-podium-asphalt/15 bg-white shadow-[0_1px_3px_rgba(27,27,31,0.06)]"
+      }`}
+    >
+      {badge && (
+        <span className="self-start bg-podium-track text-podium-asphalt font-mono text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-full mb-4">
+          {badge}
+        </span>
+      )}
+      <p className="font-mono text-xs uppercase tracking-widest text-podium-asphalt/50 mb-2">
+        {name}
+      </p>
+      <div className="flex items-baseline gap-2 mb-1">
+        <p className="font-display text-5xl tabular">{price}</p>
+        {originalPrice && (
+          <p className="font-mono text-lg text-podium-asphalt/30 line-through">{originalPrice}</p>
+        )}
+      </div>
+      <p className="font-mono text-[10px] uppercase tracking-widest text-podium-asphalt/40 mb-6">
+        / mes{originalPrice ? " · congelado de por vida" : ""}
+      </p>
+      <ul className="text-sm text-podium-asphalt/70 flex flex-col gap-2 mb-8 text-left flex-1">
+        {features.map((f) => (
+          <li key={f}>✓ {f}</li>
+        ))}
+      </ul>
+      <Link
+        href="/login"
+        className={`block text-center rounded-md py-3.5 font-display text-lg uppercase tracking-wide transition-all hover:-translate-y-0.5 ${
+          highlighted
+            ? "bg-podium-track hover:bg-podium-track-dark hover:shadow-[0_8px_20px_rgba(143,212,0,0.3)] text-podium-asphalt"
+            : "border border-podium-asphalt/20 hover:border-podium-asphalt/40"
+        }`}
+      >
+        Empezar
+      </Link>
     </div>
   );
 }

@@ -1,6 +1,18 @@
-# Ryvo — MVP (rediseño de la landing)
+# Ryvo — MVP (3 tarifas, oferta fundador en la tarifa Premium)
 
 ## Qué cambié en esta vuelta
+
+- **De una tarifa única a tres** (Básico 49€, Premium 69€, Pro 99€) en
+  la landing. La oferta de fundador ya no es "todos pagan 49€" — ahora
+  es **"los primeros gimnasios se llevan Premium al precio de Básico"**,
+  con el precio original tachado y una insignia "Precio fundador"
+  destacando la tarjeta del medio.
+- ⚠️ **Esto es solo la landing (marketing), no hay gating real en el
+  código.** El software no distingue todavía entre tarifas — cualquier
+  gimnasio tiene acceso a todo lo construido, sin importar qué tarifa
+  se le prometa. Construir el bloqueo de funciones por tarifa sería un
+  proyecto aparte; para un piloto de un solo gimnasio no hace falta
+  todavía.
 
 - **Quitada la afirmación "0€ de integración con tu software actual"**
   — no tenía sentido, no existe integración con otros sistemas. La
